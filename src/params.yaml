@@ -1,0 +1,18 @@
+caro: 
+  train_manifest_path: ../data/caromopfen/train_manifest.jsonl
+  val_manifest_path: ../data/caromopfen/val_manifest.jsonl
+  sup_data_path: ../data/caromopfen/fastpitch_sup_data
+  fastpitch_pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_fastpitch_multispeaker_5 +init_from_pretrained_model._.exclude=['fastpitch.encoder.word_emb.weight']"  # Set to "++init_from_nemo_model=/path/to/model.nemo" when needed
+  fastpitch_max_dur: 12
+  fastpitch_batch_size: 16
+  fastpitch_peak_lr: 1e-5
+  fastpitch_epochs: 2
+  tts_log_dir: ../trained_pipelines/caro/fastpitch
+  speaker_name: caromopfen
+  data_folder: ../data
+  hifigan_log_dir: ../trained_pipelines/caro/hifigan
+  hifigan_pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"  # Set to "++init_from_nemo_model=/path/to/model.nemo" when needed
+  hifigan_batch_size: 24
+  hifigan_epochs: 2
+  hifigan_peak_lr: 1e-5
+  hifigan_n_train_segments: 16384
