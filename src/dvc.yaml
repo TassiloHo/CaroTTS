@@ -1,0 +1,86 @@
+stages:
+  download_caro_hui_data::
+    cmd: python prepare_hui_data.py --speaker ${caro.speaker_name} --data-folder ${caro.data_folder}
+    outs:
+    - ${caro.data_folder}/${caro.speaker_name}/${caro.speaker_name}
+    - ${caro.data_folder}/${caro.speaker_name}/train_manifest.jsonl
+    - ${caro.data_folder}/${caro.speaker_name}/val_manifest.jsonl
+
+  train_fastpitch_caro:
+    cmd: >-
+      python train_fastpitch.py
+      --config-path configs
+      --config-name train_config_fastpitch
+      log_dir=${caro.tts_log_dir}
+      train_manifest=${caro.train_manifest_path}
+      validation_manifest=${caro.val_manifest_path}
+      sup_data_path=${caro.sup_data_path}
+      max_duration=${caro.fastpitch_max_dur}
+      batch_size=${caro.fastpitch_batch_size}
+      model.optim.lr=${caro.fastpitch_peak_lr}
+      trainer.max_epochs=${caro.fastpitch_epochs}
+      ${caro.fastpitch_pretrained_init_arg}
+    deps:
+    - configs/train_config_fastpitch.yaml
+    params:
+    - caro.tts_log_dir
+    - caro.train_manifest_path
+    - caro.val_manifest_path
+    - caro.sup_data_path
+    - caro.fastpitch_pretrained_init_arg
+    - caro.fastpitch_max_dur
+    - caro.fastpitch_batch_size
+    - caro.fastpitch_peak_lr
+    - caro.fastpitch_epochs
+    outs:
+    - ${caro.tts_log_dir}
+    - ${caro.sup_data_path}
+
+  generate_mels_caro:
+    cmd: >-
+      python generate_mels.py
+      --cpu
+      --fastpitch-model-ckpt ${caro.tts_log_dir}/checkpoints/default.nemo
+      --input-json-manifests ${caro.train_manifest_path} ${caro.val_manifest_path}
+      --output-json-manifest-root ${caro.data_folder}/${caro.speaker_name}/mel_manifests
+    params:
+    - caro.tts_log_dir
+    - caro.train_manifest_path
+    - caro.val_manifest_path
+    deps:
+    - ${caro.tts_log_dir}
+    outs:
+    - ${caro.data_folder}/${caro.speaker_name}/mel_manifests/train_manifest_mel.jsonl
+    - ${caro.data_folder}/${caro.speaker_name}/mel_manifests/val_manifest_mel.jsonl
+    - ${caro.data_folder}/${caro.speaker_name}/mel_manifests/mels
+    
+
+  train_hifigan_caro:
+    cmd: >-
+      python train_hifigan.py
+      --config-path configs
+      --config-name train_config_hifigan
+      train_dataset=${caro.data_folder}/${caro.speaker_name}/mel_manifests/train_manifest_mel.jsonl
+      validation_datasets=${caro.data_folder}/${caro.speaker_name}/mel_manifests/val_manifest_mel.jsonl
+      log_dir=${caro.hifigan_log_dir}
+      batch_size=${caro.hifigan_batch_size}
+      model.optim.lr=${caro.hifigan_peak_lr}
+      trainer.max_epochs=${caro.hifigan_epochs}
+      train_n_segments=${caro.hifigan_n_train_segments}
+      ${caro.hifigan_pretrained_init_arg}
+    params:
+    - caro.data_folder
+    - caro.speaker_name
+    - caro.hifigan_pretrained_init_arg
+    - caro.hifigan_log_dir
+    - caro.hifigan_batch_size
+    - caro.hifigan_peak_lr
+    - caro.hifigan_epochs
+    - caro.hifigan_n_train_segments
+
+    outs:
+    - ${caro.hifigan_log_dir}
+    deps:
+    - ${caro.data_folder}/${caro.speaker_name}/mel_manifests/train_manifest_mel.jsonl
+    - ${caro.data_folder}/${caro.speaker_name}/mel_manifests/val_manifest_mel.jsonl
+    - ${caro.data_folder}/${caro.speaker_name}/mel_manifests/mels

@@ -1,0 +1,157 @@
+schema: '2.0'
+stages:
+  train_fastpitch_caro:
+    cmd: python train_fastpitch.py --config-path configs --config-name 
+      train_config_fastpitch log_dir=../trained_pipelines/caro/fastpitch 
+      train_manifest=../data/caromopfen/train_manifest.jsonl 
+      validation_manifest=../data/caromopfen/val_manifest.jsonl 
+      sup_data_path=../data/caromopfen/fastpitch_sup_data max_duration=12 
+      batch_size=16 model.optim.lr=1e-05 trainer.max_epochs=2 
+      +init_from_pretrained_model._.name=tts_de_fastpitch_multispeaker_5 
+      +init_from_pretrained_model._.exclude=['fastpitch.encoder.word_emb.weight']
+    deps:
+    - path: configs/train_config_fastpitch.yaml
+      hash: md5
+      md5: 018859253c8c6e6937ef7e9d8938aa5c
+      size: 6172
+    params:
+      params.yaml:
+        caro.fastpitch_batch_size: 16
+        caro.fastpitch_epochs: 2
+        caro.fastpitch_max_dur: 12
+        caro.fastpitch_peak_lr: 1e-05
+        caro.fastpitch_pretrained_init_arg: 
+          +init_from_pretrained_model._.name=tts_de_fastpitch_multispeaker_5 
+          +init_from_pretrained_model._.exclude=['fastpitch.encoder.word_emb.weight']
+        caro.sup_data_path: ../data/caromopfen/fastpitch_sup_data
+        caro.train_manifest_path: ../data/caromopfen/train_manifest.jsonl
+        caro.tts_log_dir: ../trained_pipelines/caro/fastpitch
+        caro.val_manifest_path: ../data/caromopfen/val_manifest.jsonl
+    outs:
+    - path: ../data/caromopfen/fastpitch_sup_data
+      hash: md5
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+    - path: ../trained_pipelines/caro/fastpitch
+      hash: md5
+      md5: 42b2cc86594c5b41bc0b058840ff0e3b.dir
+      size: 1817601215
+      nfiles: 10
+  'download_caro_hui_data:':
+    cmd: python prepare_hui_data.py --speaker caromopfen --data-folder ../data
+    outs:
+    - path: ../data/caromopfen/caromopfen
+      hash: md5
+      md5: 175da1f6bf096676361414cd80be1410.dir
+      size: 657992024
+      nfiles: 945
+    - path: ../data/caromopfen/train_manifest.jsonl
+      hash: md5
+      md5: 3526ae7fdea40abe245aa1048f5ff170
+      size: 450224
+    - path: ../data/caromopfen/val_manifest.jsonl
+      hash: md5
+      md5: f22786530c1c7f204b4058bd15c0ed8f
+      size: 51947
+  generate_mels:
+    cmd: python generate_mels.py --cpu --fastpitch-model-ckpt 
+      ../trained_pipelines/caro/fastpitch/checkpoints/FastPitch.nemo 
+      --input-json-manifests ../data/caromopfen/train_manifest.jsonl 
+      ../data/caromopfen/val_manifest.jsonl --output-json-manifest-root 
+      ../data/caromopfen/mel_manifests
+    deps:
+    - path: ../trained_pipelines/caro/fastpitch
+      hash: md5
+      md5: 06f78e6146e6524fd8ad1c72d5ba8df9.dir
+      size: 2381930056
+      nfiles: 12
+    params:
+      params.yaml:
+        caro.train_manifest_path: ../data/caromopfen/train_manifest.jsonl
+        caro.tts_log_dir: ../trained_pipelines/caro/fastpitch
+        caro.val_manifest_path: ../data/caromopfen/val_manifest.jsonl
+    outs:
+    - path: ../data/caromopfen/mel_manifests/mels
+      hash: md5
+      md5: dd90255fdcb3da1918bf8a295e9aa218.dir
+      size: 205530112
+      nfiles: 944
+    - path: ../data/caromopfen/mel_manifests/train_manifest_mel.jsonl
+      hash: md5
+      md5: cef65b571d9f8b7314a2b756cc5c64cf
+      size: 540979
+    - path: ../data/caromopfen/mel_manifests/val_manifest_mel.jsonl
+      hash: md5
+      md5: 2fcd868a80f3acdaf14d07468df12cea
+      size: 58424
+  generate_mels_caro:
+    cmd: python generate_mels.py --cpu --fastpitch-model-ckpt 
+      ../trained_pipelines/caro/fastpitch/checkpoints/default.nemo 
+      --input-json-manifests ../data/caromopfen/train_manifest.jsonl 
+      ../data/caromopfen/val_manifest.jsonl --output-json-manifest-root 
+      ../data/caromopfen/mel_manifests
+    deps:
+    - path: ../trained_pipelines/caro/fastpitch
+      hash: md5
+      md5: 42b2cc86594c5b41bc0b058840ff0e3b.dir
+      size: 1817601215
+      nfiles: 10
+    params:
+      params.yaml:
+        caro.train_manifest_path: ../data/caromopfen/train_manifest.jsonl
+        caro.tts_log_dir: ../trained_pipelines/caro/fastpitch
+        caro.val_manifest_path: ../data/caromopfen/val_manifest.jsonl
+    outs:
+    - path: ../data/caromopfen/mel_manifests/mels
+      hash: md5
+      md5: b136c9290a699f6e224a473dd81098ea.dir
+      size: 205530112
+      nfiles: 944
+    - path: ../data/caromopfen/mel_manifests/train_manifest_mel.jsonl
+      hash: md5
+      md5: a3cb533d895ea8a8dee9a0b7438035f3
+      size: 537671
+    - path: ../data/caromopfen/mel_manifests/val_manifest_mel.jsonl
+      hash: md5
+      md5: d6086be8248af8c777811705b57b2c7d
+      size: 61732
+  train_hifigan_caro:
+    cmd: python train_hifigan.py --config-path configs --config-name 
+      train_config_hifigan 
+      train_dataset=../data/caromopfen/mel_manifests/train_manifest_mel.jsonl 
+      validation_datasets=../data/caromopfen/mel_manifests/val_manifest_mel.jsonl
+      log_dir=../trained_pipelines/caro/hifigan batch_size=24 
+      model.optim.lr=1e-05 trainer.max_epochs=2 train_n_segments=16384 
+      +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
+    deps:
+    - path: ../data/caromopfen/mel_manifests/mels
+      hash: md5
+      md5: b136c9290a699f6e224a473dd81098ea.dir
+      size: 205530112
+      nfiles: 944
+    - path: ../data/caromopfen/mel_manifests/train_manifest_mel.jsonl
+      hash: md5
+      md5: a3cb533d895ea8a8dee9a0b7438035f3
+      size: 537671
+    - path: ../data/caromopfen/mel_manifests/val_manifest_mel.jsonl
+      hash: md5
+      md5: d6086be8248af8c777811705b57b2c7d
+      size: 61732
+    params:
+      params.yaml:
+        caro.data_folder: ../data
+        caro.hifigan_batch_size: 24
+        caro.hifigan_epochs: 2
+        caro.hifigan_log_dir: ../trained_pipelines/caro/hifigan
+        caro.hifigan_n_train_segments: 16384
+        caro.hifigan_peak_lr: 1e-05
+        caro.hifigan_pretrained_init_arg: 
+          +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
+        caro.speaker_name: caromopfen
+    outs:
+    - path: ../trained_pipelines/caro/hifigan
+      hash: md5
+      md5: ef02554afe567756e12e3ecc28cce190.dir
+      size: 3391091865
+      nfiles: 10
