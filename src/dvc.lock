@@ -90,6 +90,11 @@ stages:
       ../data/caromopfen/val_manifest.jsonl --output-json-manifest-root 
       ../data/caromopfen/mel_manifests
     deps:
+    - path: ../pretrained_models
+      hash: md5
+      md5: 0243b7e01661054c07165d7d8fe6cf93.dir
+      size: 183429120
+      nfiles: 1
     - path: ../trained_pipelines/caro/fastpitch
       hash: md5
       md5: 1628eab071e49294088c8259f545be59.dir
@@ -191,3 +196,19 @@ stages:
       md5: 6e74acd9054258597bd56899231838d3.dir
       size: 86691634
       nfiles: 120
+  download_pretrained_modules:
+    cmd: python download_pretrained.py 
+      +init_from_nemo_model=../pretrained_models/FemaleFastpitchHUI_44100.nemo 
+      +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
+    params:
+      params.yaml:
+        caro.fastpitch_pretrained_init_arg: 
+          +init_from_nemo_model=../pretrained_models/FemaleFastpitchHUI_44100.nemo
+        caro.hifigan_pretrained_init_arg: 
+          +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
+    outs:
+    - path: ../pretrained_models
+      hash: md5
+      md5: 0243b7e01661054c07165d7d8fe6cf93.dir
+      size: 183429120
+      nfiles: 1

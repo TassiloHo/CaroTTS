@@ -36,6 +36,17 @@ stages:
     - ${caro.log_dir}/fastpitch
     - ${caro.sup_data_path}
 
+
+  download_pretrained_modules:
+    cmd: >-
+      python download_pretrained.py ${caro.fastpitch_pretrained_init_arg} ${caro.hifigan_pretrained_init_arg}
+    params:
+    - caro.fastpitch_pretrained_init_arg
+    - caro.hifigan_pretrained_init_arg
+    outs:
+    - ../pretrained_models:
+        persist: true
+
   generate_mels_caro:
     cmd: >-
       python generate_mels.py
@@ -49,6 +60,7 @@ stages:
     - caro.val_manifest_path
     deps:
     - ${caro.log_dir}/fastpitch
+    - ../pretrained_models
     outs:
     - ${caro.data_folder}/${caro.speaker_name}/mel_manifests/train_manifest_mel.jsonl
     - ${caro.data_folder}/${caro.speaker_name}/mel_manifests/val_manifest_mel.jsonl
