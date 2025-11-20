@@ -1,0 +1,115 @@
+stages:
+  download_hui_data:
+    foreach: ${speaker}
+    do:
+      cmd: python src/prepare_hui_data.py --speaker ${item.speaker_name} --data-folder ${item.data_folder}
+      outs:
+      - ${item.data_folder}/${item.speaker_name}/${item.speaker_name}
+      - ${item.data_folder}/${item.speaker_name}/train_manifest.jsonl
+      - ${item.data_folder}/${item.speaker_name}/val_manifest.jsonl
+
+  download_pretrained_modules:
+    cmd: >-
+      python src/download_pretrained.py
+      --pretrained-dir ${pretrained_models_dir}
+    params:
+    - pretrained_downloads
+    - pretrained_models_dir
+    outs:
+    - ${pretrained_models_dir}:
+        persist: true
+
+  train_fastpitch:
+    foreach: ${speaker}
+    do:
+      cmd: >-
+        python src/train_fastpitch.py
+        --config-path configs
+        --config-name train_config_fastpitch
+        log_dir=${item.log_dir}/fastpitch
+        train_manifest=${item.train_manifest_path}
+        validation_manifest=${item.val_manifest_path}
+        sup_data_path=${item.sup_data_path}
+        max_duration=${item.fastpitch_max_dur}
+        batch_size=${item.fastpitch_batch_size}
+        model.optim.lr=${item.fastpitch_peak_lr}
+        trainer.max_epochs=${item.fastpitch_epochs}
+        pitch_fmin=${item.pitch_fmin}
+        pitch_fmax=${item.pitch_fmax}
+        pitch_mean=${item.pitch_mean}
+        pitch_std=${item.pitch_std}
+        ${item.fastpitch_pretrained_init_arg}
+      deps:
+      - src/configs/train_config_fastpitch.yaml
+      params:
+      - speaker.${key}
+      outs:
+      - ${item.log_dir}/fastpitch
+      - ${item.sup_data_path}
+
+  generate_mels:
+    foreach: ${speaker}
+    do:
+      cmd: >-
+        python src/generate_mels.py
+        --cpu
+        --fastpitch-model-ckpt ${item.log_dir}/fastpitch/checkpoints/default.nemo
+        --input-json-manifests ${item.train_manifest_path} ${item.val_manifest_path}
+        --output-json-manifest-root ${item.data_folder}/${item.speaker_name}/mel_manifests
+      deps:
+      - ${item.log_dir}/fastpitch
+      - ${pretrained_models_dir}
+      params:
+      - speaker.${key}.log_dir
+      - speaker.${key}.train_manifest_path
+      - speaker.${key}.val_manifest_path
+      outs:
+      - ${item.data_folder}/${item.speaker_name}/mel_manifests/train_manifest_mel.jsonl
+      - ${item.data_folder}/${item.speaker_name}/mel_manifests/val_manifest_mel.jsonl
+      - ${item.data_folder}/${item.speaker_name}/mel_manifests/mels
+
+  train_hifigan:
+    foreach: ${speaker}
+    do:
+      cmd: >-
+        python src/train_hifigan.py
+        --config-path configs
+        --config-name train_config_hifigan
+        train_dataset=${item.data_folder}/${item.speaker_name}/mel_manifests/train_manifest_mel.jsonl
+        validation_datasets=${item.data_folder}/${item.speaker_name}/mel_manifests/val_manifest_mel.jsonl
+        log_dir=${item.log_dir}/hifigan
+        batch_size=${item.hifigan_batch_size}
+        model.optim.lr=${item.hifigan_peak_lr}
+        trainer.max_epochs=${item.hifigan_epochs}
+        train_n_segments=${item.hifigan_n_train_segments}
+        ${item.hifigan_pretrained_init_arg}
+      params:
+      - speaker.${key}
+      deps:
+      - ${item.data_folder}/${item.speaker_name}/mel_manifests/train_manifest_mel.jsonl
+      - ${item.data_folder}/${item.speaker_name}/mel_manifests/val_manifest_mel.jsonl
+      - ${item.data_folder}/${item.speaker_name}/mel_manifests/mels
+      outs:
+      - ${item.log_dir}/hifigan
+
+  infer_and_compare:
+    foreach: ${speaker}
+    do:
+      cmd: >-
+        python src/infer_tts.py
+        --fastpitch-model-ckpt ${item.log_dir}/fastpitch/checkpoints/default.nemo
+        --hifigan-model-ckpt ${item.log_dir}/hifigan/checkpoints/default.nemo
+        --manifests ${item.train_manifest_path}
+        --manifests ${item.val_manifest_path}
+        --output-dir ${item.log_dir}/inference_comparison
+        --nrows ${item.inference_comparison_nrows}
+        --device cuda
+      deps:
+      - ${item.log_dir}/fastpitch/checkpoints/default.nemo
+      - ${item.log_dir}/hifigan/checkpoints/default.nemo
+      - ${item.train_manifest_path}
+      - ${item.val_manifest_path}
+      params:
+      - speaker.${key}
+      outs:
+      - ${item.log_dir}/inference_comparison

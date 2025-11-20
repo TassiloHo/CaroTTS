@@ -1,0 +1,50 @@
+speaker:
+  caromopfen:
+    speaker_name: caromopfen
+    data_folder: data
+    log_dir: trained_pipelines/caro
+    train_manifest_path: data/caromopfen/train_manifest.jsonl
+    val_manifest_path: data/caromopfen/val_manifest.jsonl
+    sup_data_path: data/caromopfen/fastpitch_sup_data
+    fastpitch_max_dur: 13
+    fastpitch_batch_size: 16
+    fastpitch_peak_lr: 0.001
+    fastpitch_epochs: 50
+    fastpitch_pretrained_init_arg: "+init_from_nemo_model=../pretrained_models/FemaleFastpitchHUI_44100.nemo"  # Set to "" for training from scratch
+    hifigan_pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"  # Set to "++init_from_nemo_model=/path/to/model.nemo" or "" when needed
+    hifigan_batch_size: 24
+    hifigan_peak_lr: 0.0001
+    hifigan_epochs: 100
+    hifigan_n_train_segments: 8192
+    inference_comparison_nrows: 5
+    pitch_fmin: 65.4063949584961
+    pitch_fmax: 2093.004638671875
+    pitch_mean: 207.1428985595703
+    pitch_std: 151.80140686035156
+
+  Karlsson:
+    speaker_name: Karlsson
+    data_folder: data
+    log_dir: trained_pipelines/Karlsson
+    train_manifest_path: data/Karlsson/train_manifest.jsonl
+    val_manifest_path: data/Karlsson/val_manifest.jsonl
+    sup_data_path: data/Karlsson/fastpitch_sup_data
+    fastpitch_max_dur: 13
+    fastpitch_batch_size: 16
+    fastpitch_peak_lr: 0.0001
+    fastpitch_epochs: 50
+    fastpitch_pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_fastpitch_multispeaker_5 +init_from_pretrained_model._.exclude=['fastpitch.encoder.word_emb.weight']"  # Set to "" for training from scratch
+    hifigan_pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"
+    hifigan_batch_size: 16
+    hifigan_peak_lr: 0.0001
+    hifigan_epochs: 5
+    hifigan_n_train_segments: 16384
+    inference_comparison_nrows: 20
+    pitch_mean: 108.50373077392578
+    pitch_std: 23.765565872192383
+    pitch_fmax: 355.3326416015625
+    pitch_fmin: 65.4063949584961
+
+pretrained_models_dir: pretrained_models
+pretrained_downloads:
+  - FemaleFastpitchHUI_44100.nemo

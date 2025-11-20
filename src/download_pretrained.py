@@ -1,38 +1,25 @@
 import os
-import re
 import urllib.request
 from pathlib import Path
 from typing import List
 import typer
+import yaml
 
 app = typer.Typer()
 
-def extract_nemo_model_path(arg_string):
-    """Extract init_from_nemo_model path from argument string."""
-    if not arg_string or "init_from_nemo_model=" not in arg_string:
-        return None
-    
-    match = re.search(r'init_from_nemo_model=([^\s]+)', arg_string)
-    if match:
-        return match.group(1)
-    return None
 
-def download_if_not_exists(model_path, pretrained_dir, base_url):
+def download_if_not_exists(filename, pretrained_dir, base_url):
     """Download model if it doesn't exist."""
-    full_path = Path(model_path)
-    filename = full_path.name
-    
-    if not filename.endswith('.nemo'):
-        print(f"Skipping non-.nemo file: {filename}")
+    if not filename or not filename.endswith(".nemo"):
+        print(f"Skipping invalid filename: {filename}")
         return
-    
+
     destination = Path(pretrained_dir) / filename
-    
+
     if destination.exists():
         print(f"✓ Model already exists: {destination}")
         return
-    
-    # Construct download URL
+
     download_url = f"{base_url}/{filename}?download=true"
     
     print(f"Downloading {filename} from HuggingFace...")
@@ -46,42 +33,36 @@ def download_if_not_exists(model_path, pretrained_dir, base_url):
 
 @app.command()
 def main(
-    arg_strings: List[str] = typer.Argument(
-        ..., help="Model initialization argument strings"
-    ),
     pretrained_dir: str = typer.Option(
-        "../pretrained_models", help="Directory to store pretrained models"
+        "pretrained_models", help="Directory to store pretrained models"
     ),
     base_url: str = typer.Option(
         "https://huggingface.co/Warholt/Pretrained-TTS-Modules/resolve/main",
         help="Base URL for downloading models",
     ),
+    params_file: str = typer.Option("params.yaml", help="Path to params.yaml file"),
 ):
-    Path(pretrained_dir).mkdir(parents=True, exist_ok=True)
     """Download pretrained NEMO models if they don't exist."""
-    if not arg_strings:
-        print("No arguments provided. Nothing to download.")
+    Path(pretrained_dir).mkdir(parents=True, exist_ok=True)
+
+    # Read model filenames from params.yaml
+    with open(params_file, "r") as f:
+        params = yaml.safe_load(f)
+
+    model_filenames = params.get("pretrained_downloads", [])
+
+    if not model_filenames:
+        print("No models specified for download. Nothing to do.")
         return
-    
-    # Extract model paths from arguments
-    model_paths = []
-    for arg_string in arg_strings:
-        model_path = extract_nemo_model_path(arg_string)
-        if model_path:
-            model_paths.append(model_path)
-    
-    if not model_paths:
-        print("No pretrained models found in arguments")
-        return
-    
-    print(f"Found {len(model_paths)} pretrained model(s) to check:")
-    for path in model_paths:
-        print(f"  - {path}")
+
+    print(f"Found {len(model_filenames)} model(s) to check:")
+    for filename in model_filenames:
+        print(f"  - {filename}")
     print()
-    
-    # Download each model if needed
-    for model_path in model_paths:
-        download_if_not_exists(model_path, pretrained_dir, base_url)
+
+    for filename in model_filenames:
+        download_if_not_exists(filename, pretrained_dir, base_url)
+
 
 if __name__ == "__main__":
     app()
