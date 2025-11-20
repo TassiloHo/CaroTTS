@@ -4,16 +4,14 @@ sup_data_path: ???
 log_dir: ???
 max_duration: ???
 batch_size: ???
-
-
-sup_data_types: [ "align_prior_matrix"]
-
 pitch_fmin: 65.4063949584961
 pitch_fmax: 2093.004638671875
-pitch_mean: 207.1428985595703
-pitch_std: 151.80140686035156
-#
-# Default values for dataset with sample_rate=22050
+pitch_mean: 200
+pitch_std: 100
+sup_data_types: [ "align_prior_matrix"]
+
+
+# Default values for dataset with sample_rate=44100
 sample_rate: 44100
 n_mel_channels: 80
 n_window_size: 2048

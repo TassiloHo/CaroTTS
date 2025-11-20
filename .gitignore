@@ -1,3 +1,5 @@
 *.wav
 *.zip
 pretrained_models
+data
+trained_pipelines
