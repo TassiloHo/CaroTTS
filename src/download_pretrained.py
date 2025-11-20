@@ -46,12 +46,16 @@ def download_if_not_exists(model_path, pretrained_dir, base_url):
 
 @app.command()
 def main(
-    arg_strings: List[str] = typer.Argument(..., help="Model initialization argument strings"),
-    pretrained_dir: str = typer.Option("../pretrained_models", help="Directory to store pretrained models"),
+    arg_strings: List[str] = typer.Argument(
+        ..., help="Model initialization argument strings"
+    ),
+    pretrained_dir: str = typer.Option(
+        "../pretrained_models", help="Directory to store pretrained models"
+    ),
     base_url: str = typer.Option(
-        "https://huggingface.co/Warholt/Hokus-Pokus-Fastpitch/resolve/main",
-        help="Base URL for downloading models"
-    )
+        "https://huggingface.co/Warholt/Pretrained-TTS-Modules/resolve/main",
+        help="Base URL for downloading models",
+    ),
 ):
     Path(pretrained_dir).mkdir(parents=True, exist_ok=True)
     """Download pretrained NEMO models if they don't exist."""
