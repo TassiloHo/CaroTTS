@@ -1,8 +1,6 @@
 from nemo.collections.tts.models.fastpitch import FastPitchModel, process_batch, plot_alignment_to_numpy, plot_spectrogram_to_numpy, TensorBoardLogger
 import torch
-from nemo.core.classes.common import set_safe_module_names
 
-set_safe_module_names(['nemo_text_processing'])
 
 class FastSpeechModel(FastPitchModel):
     """FastSpeech model for text-to-speech synthesis.

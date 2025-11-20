@@ -1,5 +1,6 @@
 import lightning.pytorch as pl
 from nemo.core.config import hydra_runner
+from nemo.collections.common.callbacks import LogEpochTimeCallback
 from nemo.utils.exp_manager import exp_manager
 from models.fastspeech import FastSpeechModel
 import torch
@@ -12,6 +13,9 @@ def main(cfg:DictConfig):
     exp_manager(trainer, cfg.get("exp_manager", None))
     model = FastSpeechModel(cfg=cfg.model, trainer=trainer)
     model.maybe_init_from_pretrained_checkpoint(cfg=cfg)
+    lr_logger = pl.callbacks.LearningRateMonitor()
+    epoch_time_logger = LogEpochTimeCallback()
+    trainer.callbacks.extend([lr_logger, epoch_time_logger])
     trainer.fit(model)
 
 
