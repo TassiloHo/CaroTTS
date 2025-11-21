@@ -10,7 +10,7 @@ speaker:
     fastpitch_batch_size: 16
     fastpitch_peak_lr: 0.001
     fastpitch_epochs: 50
-    fastpitch_pretrained_init_arg: "+init_from_nemo_model=../pretrained_models/FemaleFastpitchHUI_44100.nemo"  # Set to "" for training from scratch
+    fastpitch_pretrained_init_arg: "+init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo"  # Set to "" for training from scratch
     hifigan_pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"  # Set to "++init_from_nemo_model=/path/to/model.nemo" or "" when needed
     hifigan_batch_size: 24
     hifigan_peak_lr: 0.0001
