@@ -27,7 +27,7 @@ stages:
     deps:
     - path: src/configs/train_config_fastpitch.yaml
       hash: md5
-      md5: 44e9127550a77d1d7c8ee4be8c5a08ed
+      md5: 2863e8b32d51e4c66266d36e36a6451d
       size: 6208
     params:
       params.yaml:
@@ -56,6 +56,7 @@ stages:
           pitch_std: 23.765565872192383
           pitch_fmax: 355.3326416015625
           pitch_fmin: 65.4063949584961
+          export_quantization: QInt8
     outs:
     - path: data/Karlsson/fastpitch_sup_data
       hash: md5
@@ -152,6 +153,7 @@ stages:
           pitch_std: 23.765565872192383
           pitch_fmax: 355.3326416015625
           pitch_fmin: 65.4063949584961
+          export_quantization: QInt8
     outs:
     - path: trained_pipelines/Karlsson/hifigan
       hash: md5
@@ -210,6 +212,7 @@ stages:
           pitch_std: 23.765565872192383
           pitch_fmax: 355.3326416015625
           pitch_fmin: 65.4063949584961
+          export_quantization: QInt8
     outs:
     - path: trained_pipelines/Karlsson/inference_comparison
       hash: md5
@@ -261,7 +264,7 @@ stages:
     deps:
     - path: src/configs/train_config_fastpitch.yaml
       hash: md5
-      md5: 44e9127550a77d1d7c8ee4be8c5a08ed
+      md5: 2863e8b32d51e4c66266d36e36a6451d
       size: 6208
     params:
       params.yaml:
@@ -289,6 +292,7 @@ stages:
           pitch_fmax: 2093.004638671875
           pitch_mean: 207.1428985595703
           pitch_std: 151.80140686035156
+          export_quantization: QInt8
     outs:
     - path: data/caromopfen/fastpitch_sup_data
       hash: md5
@@ -385,6 +389,7 @@ stages:
           pitch_fmax: 2093.004638671875
           pitch_mean: 207.1428985595703
           pitch_std: 151.80140686035156
+          export_quantization: QInt8
     outs:
     - path: trained_pipelines/caro/hifigan
       hash: md5
@@ -442,9 +447,67 @@ stages:
           pitch_fmax: 2093.004638671875
           pitch_mean: 207.1428985595703
           pitch_std: 151.80140686035156
+          export_quantization: QInt8
     outs:
     - path: trained_pipelines/caro/inference_comparison
       hash: md5
       md5: 6e74acd9054258597bd56899231838d3.dir
       size: 86691634
       nfiles: 120
+  export_onnx@caromopfen:
+    cmd: python src/export.py --model-type tts --pretrained-path 
+      trained_pipelines/caro/fastpitch/checkpoints/default.nemo --target-path 
+      trained_pipelines/caro/onnx/fastpitch.onnx --quantization QInt8 && python 
+      src/export.py --model-type hifigan --pretrained-path 
+      trained_pipelines/caro/hifigan/checkpoints/default.nemo --target-path 
+      trained_pipelines/caro/onnx/hifigan.onnx --quantization QInt8
+    deps:
+    - path: trained_pipelines/caro/fastpitch/checkpoints/default.nemo
+      hash: md5
+      md5: 105b34bef64abf9eea3b4eafdd9388c2
+      size: 183429120
+    - path: trained_pipelines/caro/hifigan/checkpoints/default.nemo
+      hash: md5
+      md5: 355661077ccb562dda3443d42e439e06
+      size: 339548160
+    params:
+      params.yaml:
+        speaker.caromopfen.export_quantization: QInt8
+    outs:
+    - path: trained_pipelines/caro/onnx/fastpitch.onnx
+      hash: md5
+      md5: 9d908ea452dd2955832abeaa8acd6b65
+      size: 45338609
+    - path: trained_pipelines/caro/onnx/hifigan.onnx
+      hash: md5
+      md5: e9a6e8edd4959ec90b42b9fde2b3b158
+      size: 22151503
+  export_onnx@Karlsson:
+    cmd: python src/export.py --model-type tts --pretrained-path 
+      trained_pipelines/Karlsson/fastpitch/checkpoints/default.nemo 
+      --target-path trained_pipelines/Karlsson/onnx/fastpitch.onnx 
+      --quantization QInt8 && python src/export.py --model-type hifigan 
+      --pretrained-path 
+      trained_pipelines/Karlsson/hifigan/checkpoints/default.nemo --target-path 
+      trained_pipelines/Karlsson/onnx/hifigan.onnx --quantization QInt8
+    deps:
+    - path: trained_pipelines/Karlsson/fastpitch/checkpoints/default.nemo
+      hash: md5
+      md5: 4f1af268f1af059c74dfe3ea1c8af9a5
+      size: 183429120
+    - path: trained_pipelines/Karlsson/hifigan/checkpoints/default.nemo
+      hash: md5
+      md5: 855ffae5dbb52344230038ee48bcbc88
+      size: 339548160
+    params:
+      params.yaml:
+        speaker.Karlsson.export_quantization: QInt8
+    outs:
+    - path: trained_pipelines/Karlsson/onnx/fastpitch.onnx
+      hash: md5
+      md5: 39b50552c00761a935fa6469f0bef02a
+      size: 45338610
+    - path: trained_pipelines/Karlsson/onnx/hifigan.onnx
+      hash: md5
+      md5: 3876e55233dab7de3e34af40f3d40352
+      size: 22151503

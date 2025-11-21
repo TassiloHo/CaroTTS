@@ -21,6 +21,7 @@ speaker:
     pitch_fmax: 2093.004638671875
     pitch_mean: 207.1428985595703
     pitch_std: 151.80140686035156
+    export_quantization: "QInt8"
 
   Karlsson:
     speaker_name: Karlsson
@@ -44,6 +45,7 @@ speaker:
     pitch_std: 23.765565872192383
     pitch_fmax: 355.3326416015625
     pitch_fmin: 65.4063949584961
+    export_quantization: "QInt8"
 
 pretrained_models_dir: pretrained_models
 pretrained_downloads:
