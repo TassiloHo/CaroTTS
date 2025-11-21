@@ -27,7 +27,7 @@ stages:
     deps:
     - path: src/configs/train_config_fastpitch.yaml
       hash: md5
-      md5: 2863e8b32d51e4c66266d36e36a6451d
+      md5: 44e9127550a77d1d7c8ee4be8c5a08ed
       size: 6208
     params:
       params.yaml:
@@ -257,11 +257,11 @@ stages:
       batch_size=16 model.optim.lr=0.001 trainer.max_epochs=50 
       pitch_fmin=65.4063949584961 pitch_fmax=2093.004638671875 
       pitch_mean=207.1428985595703 pitch_std=151.80140686035156 
-      +init_from_nemo_model=../pretrained_models/FemaleFastpitchHUI_44100.nemo
+      +init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo
     deps:
     - path: src/configs/train_config_fastpitch.yaml
       hash: md5
-      md5: 2863e8b32d51e4c66266d36e36a6451d
+      md5: 44e9127550a77d1d7c8ee4be8c5a08ed
       size: 6208
     params:
       params.yaml:
@@ -277,7 +277,7 @@ stages:
           fastpitch_peak_lr: 0.001
           fastpitch_epochs: 50
           fastpitch_pretrained_init_arg: 
-            +init_from_nemo_model=../pretrained_models/FemaleFastpitchHUI_44100.nemo
+            +init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo
           hifigan_pretrained_init_arg: 
             +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
           hifigan_batch_size: 24
@@ -373,7 +373,7 @@ stages:
           fastpitch_peak_lr: 0.001
           fastpitch_epochs: 50
           fastpitch_pretrained_init_arg: 
-            +init_from_nemo_model=../pretrained_models/FemaleFastpitchHUI_44100.nemo
+            +init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo
           hifigan_pretrained_init_arg: 
             +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
           hifigan_batch_size: 24
@@ -430,7 +430,7 @@ stages:
           fastpitch_peak_lr: 0.001
           fastpitch_epochs: 50
           fastpitch_pretrained_init_arg: 
-            +init_from_nemo_model=../pretrained_models/FemaleFastpitchHUI_44100.nemo
+            +init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo
           hifigan_pretrained_init_arg: 
             +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
           hifigan_batch_size: 24
