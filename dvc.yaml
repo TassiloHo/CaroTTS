@@ -113,3 +113,30 @@ stages:
       - speaker.${key}
       outs:
       - ${item.log_dir}/inference_comparison
+
+
+  export_onnx:
+    foreach: ${speaker}
+    do:
+      cmd: >-
+        python src/export.py
+        --model-type tts
+        --pretrained-path ${item.log_dir}/fastpitch/checkpoints/default.nemo
+        --target-path ${item.log_dir}/onnx/fastpitch.onnx
+        --quantization ${item.export_quantization}
+        &&
+        python src/export.py
+        --model-type hifigan
+        --pretrained-path ${item.log_dir}/hifigan/checkpoints/default.nemo
+        --target-path ${item.log_dir}/onnx/hifigan.onnx
+        --quantization ${item.export_quantization}
+      deps:
+      - ${item.log_dir}/fastpitch/checkpoints/default.nemo
+      - ${item.log_dir}/hifigan/checkpoints/default.nemo
+      params:
+      - speaker.${key}.export_quantization
+      outs:
+      - ${item.log_dir}/onnx/fastpitch.onnx
+      - ${item.log_dir}/onnx/hifigan.onnx
+
+
