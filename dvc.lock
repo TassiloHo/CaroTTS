@@ -1,11 +1,10 @@
 schema: '2.0'
 stages:
   download_pretrained_modules:
-    cmd: python src/download_pretrained.py --pretrained-dir pretrained_models
+    cmd: python src/download_pretrained.py --params-file params.yaml 
+      --pretrained-dir pretrained_models
     params:
       params.yaml:
-        pretrained_downloads:
-        - FemaleFastpitchHUI_44100.nemo
         pretrained_models_dir: pretrained_models
     outs:
     - path: pretrained_models
@@ -31,32 +30,19 @@ stages:
       size: 6208
     params:
       params.yaml:
-        speaker.Karlsson:
-          speaker_name: Karlsson
-          data_folder: data
-          log_dir: trained_pipelines/Karlsson
-          train_manifest_path: data/Karlsson/train_manifest.jsonl
-          val_manifest_path: data/Karlsson/val_manifest.jsonl
+        speaker.Karlsson.fastpitch:
           sup_data_path: data/Karlsson/fastpitch_sup_data
-          fastpitch_max_dur: 13
-          fastpitch_batch_size: 16
-          fastpitch_peak_lr: 0.0001
-          fastpitch_epochs: 50
-          fastpitch_pretrained_init_arg: 
+          max_dur: 13
+          batch_size: 16
+          peak_lr: 0.0001
+          epochs: 50
+          pretrained_init_arg: 
             +init_from_pretrained_model._.name=tts_de_fastpitch_multispeaker_5 
             +init_from_pretrained_model._.exclude=['fastpitch.encoder.word_emb.weight']
-          hifigan_pretrained_init_arg: 
-            +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
-          hifigan_batch_size: 16
-          hifigan_peak_lr: 0.0001
-          hifigan_epochs: 5
-          hifigan_n_train_segments: 16384
-          inference_comparison_nrows: 20
           pitch_mean: 108.50373077392578
           pitch_std: 23.765565872192383
           pitch_fmax: 355.3326416015625
           pitch_fmin: 65.4063949584961
-          export_quantization: QInt8
     outs:
     - path: data/Karlsson/fastpitch_sup_data
       hash: md5
@@ -75,11 +61,14 @@ stages:
       data/Karlsson/val_manifest.jsonl --output-json-manifest-root 
       data/Karlsson/mel_manifests
     deps:
-    - path: pretrained_models
+    - path: data/Karlsson/train_manifest.jsonl
       hash: md5
-      md5: 0243b7e01661054c07165d7d8fe6cf93.dir
-      size: 183429120
-      nfiles: 1
+      md5: ccebe061a844c93b9a5bc7b99f0c30d9
+      size: 6961138
+    - path: data/Karlsson/val_manifest.jsonl
+      hash: md5
+      md5: 7fb125e1bd3b884db093df4d5d6c143d
+      size: 763530
     - path: trained_pipelines/Karlsson/fastpitch
       hash: md5
       md5: baa7c81b1422c9d62e3f2e2444b877c2.dir
@@ -109,7 +98,7 @@ stages:
       train_config_hifigan 
       train_dataset=data/Karlsson/mel_manifests/train_manifest_mel.jsonl 
       validation_datasets=data/Karlsson/mel_manifests/val_manifest_mel.jsonl 
-      log_dir=trained_pipelines/Karlsson/hifigan batch_size=16 
+      log_dir=trained_pipelines/Karlsson/hifigan batch_size=24 
       model.optim.lr=0.0001 trainer.max_epochs=5 train_n_segments=16384 
       +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
     deps:
@@ -126,34 +115,19 @@ stages:
       hash: md5
       md5: 735bb41918b337645c0b6587d2776105
       size: 848287
+    - path: src/configs/train_config_hifigan.yaml
+      hash: md5
+      md5: db4e0f4fc56676faf74858ead1a1ab11
+      size: 3162
     params:
       params.yaml:
-        speaker.Karlsson:
-          speaker_name: Karlsson
-          data_folder: data
-          log_dir: trained_pipelines/Karlsson
-          train_manifest_path: data/Karlsson/train_manifest.jsonl
-          val_manifest_path: data/Karlsson/val_manifest.jsonl
-          sup_data_path: data/Karlsson/fastpitch_sup_data
-          fastpitch_max_dur: 13
-          fastpitch_batch_size: 16
-          fastpitch_peak_lr: 0.0001
-          fastpitch_epochs: 50
-          fastpitch_pretrained_init_arg: 
-            +init_from_pretrained_model._.name=tts_de_fastpitch_multispeaker_5 
-            +init_from_pretrained_model._.exclude=['fastpitch.encoder.word_emb.weight']
-          hifigan_pretrained_init_arg: 
+        speaker.Karlsson.hifigan:
+          pretrained_init_arg: 
             +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
-          hifigan_batch_size: 16
-          hifigan_peak_lr: 0.0001
-          hifigan_epochs: 5
-          hifigan_n_train_segments: 16384
-          inference_comparison_nrows: 20
-          pitch_mean: 108.50373077392578
-          pitch_std: 23.765565872192383
-          pitch_fmax: 355.3326416015625
-          pitch_fmin: 65.4063949584961
-          export_quantization: QInt8
+          batch_size: 24
+          peak_lr: 0.0001
+          epochs: 5
+          n_train_segments: 16384
     outs:
     - path: trained_pipelines/Karlsson/hifigan
       hash: md5
@@ -191,28 +165,30 @@ stages:
           speaker_name: Karlsson
           data_folder: data
           log_dir: trained_pipelines/Karlsson
+          inference_comparison_nrows: 20
+          export_quantization: QInt8
           train_manifest_path: data/Karlsson/train_manifest.jsonl
           val_manifest_path: data/Karlsson/val_manifest.jsonl
-          sup_data_path: data/Karlsson/fastpitch_sup_data
-          fastpitch_max_dur: 13
-          fastpitch_batch_size: 16
-          fastpitch_peak_lr: 0.0001
-          fastpitch_epochs: 50
-          fastpitch_pretrained_init_arg: 
-            +init_from_pretrained_model._.name=tts_de_fastpitch_multispeaker_5 
-            +init_from_pretrained_model._.exclude=['fastpitch.encoder.word_emb.weight']
-          hifigan_pretrained_init_arg: 
-            +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
-          hifigan_batch_size: 16
-          hifigan_peak_lr: 0.0001
-          hifigan_epochs: 5
-          hifigan_n_train_segments: 16384
-          inference_comparison_nrows: 20
-          pitch_mean: 108.50373077392578
-          pitch_std: 23.765565872192383
-          pitch_fmax: 355.3326416015625
-          pitch_fmin: 65.4063949584961
-          export_quantization: QInt8
+          fastpitch:
+            sup_data_path: data/Karlsson/fastpitch_sup_data
+            max_dur: 13
+            batch_size: 16
+            peak_lr: 0.0001
+            epochs: 50
+            pretrained_init_arg: 
+              +init_from_pretrained_model._.name=tts_de_fastpitch_multispeaker_5
+              +init_from_pretrained_model._.exclude=['fastpitch.encoder.word_emb.weight']
+            pitch_mean: 108.50373077392578
+            pitch_std: 23.765565872192383
+            pitch_fmax: 355.3326416015625
+            pitch_fmin: 65.4063949584961
+          hifigan:
+            pretrained_init_arg: 
+              +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
+            batch_size: 24
+            peak_lr: 0.0001
+            epochs: 5
+            n_train_segments: 16384
     outs:
     - path: trained_pipelines/Karlsson/inference_comparison
       hash: md5
@@ -268,31 +244,18 @@ stages:
       size: 6208
     params:
       params.yaml:
-        speaker.caromopfen:
-          speaker_name: caromopfen
-          data_folder: data
-          log_dir: trained_pipelines/caro
-          train_manifest_path: data/caromopfen/train_manifest.jsonl
-          val_manifest_path: data/caromopfen/val_manifest.jsonl
+        speaker.caromopfen.fastpitch:
           sup_data_path: data/caromopfen/fastpitch_sup_data
-          fastpitch_max_dur: 13
-          fastpitch_batch_size: 16
-          fastpitch_peak_lr: 0.001
-          fastpitch_epochs: 50
-          fastpitch_pretrained_init_arg: 
+          max_dur: 13
+          batch_size: 16
+          peak_lr: 0.001
+          epochs: 50
+          pretrained_init_arg: 
             +init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo
-          hifigan_pretrained_init_arg: 
-            +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
-          hifigan_batch_size: 24
-          hifigan_peak_lr: 0.0001
-          hifigan_epochs: 100
-          hifigan_n_train_segments: 8192
-          inference_comparison_nrows: 5
           pitch_fmin: 65.4063949584961
           pitch_fmax: 2093.004638671875
           pitch_mean: 207.1428985595703
           pitch_std: 151.80140686035156
-          export_quantization: QInt8
     outs:
     - path: data/caromopfen/fastpitch_sup_data
       hash: md5
@@ -311,11 +274,14 @@ stages:
       data/caromopfen/val_manifest.jsonl --output-json-manifest-root 
       data/caromopfen/mel_manifests
     deps:
-    - path: pretrained_models
+    - path: data/caromopfen/train_manifest.jsonl
       hash: md5
-      md5: 0243b7e01661054c07165d7d8fe6cf93.dir
-      size: 183429120
-      nfiles: 1
+      md5: 3526ae7fdea40abe245aa1048f5ff170
+      size: 450224
+    - path: data/caromopfen/val_manifest.jsonl
+      hash: md5
+      md5: f22786530c1c7f204b4058bd15c0ed8f
+      size: 51947
     - path: trained_pipelines/caro/fastpitch
       hash: md5
       md5: 1628eab071e49294088c8259f545be59.dir
@@ -347,7 +313,7 @@ stages:
       train_dataset=data/caromopfen/mel_manifests/train_manifest_mel.jsonl 
       validation_datasets=data/caromopfen/mel_manifests/val_manifest_mel.jsonl 
       log_dir=trained_pipelines/caro/hifigan batch_size=24 model.optim.lr=0.0001
-      trainer.max_epochs=100 train_n_segments=8192 
+      trainer.max_epochs=5 train_n_segments=16384 
       +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
     deps:
     - path: data/caromopfen/mel_manifests/mels
@@ -363,33 +329,19 @@ stages:
       hash: md5
       md5: d6086be8248af8c777811705b57b2c7d
       size: 61732
+    - path: src/configs/train_config_hifigan.yaml
+      hash: md5
+      md5: db4e0f4fc56676faf74858ead1a1ab11
+      size: 3162
     params:
       params.yaml:
-        speaker.caromopfen:
-          speaker_name: caromopfen
-          data_folder: data
-          log_dir: trained_pipelines/caro
-          train_manifest_path: data/caromopfen/train_manifest.jsonl
-          val_manifest_path: data/caromopfen/val_manifest.jsonl
-          sup_data_path: data/caromopfen/fastpitch_sup_data
-          fastpitch_max_dur: 13
-          fastpitch_batch_size: 16
-          fastpitch_peak_lr: 0.001
-          fastpitch_epochs: 50
-          fastpitch_pretrained_init_arg: 
-            +init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo
-          hifigan_pretrained_init_arg: 
+        speaker.caromopfen.hifigan:
+          pretrained_init_arg: 
             +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
-          hifigan_batch_size: 24
-          hifigan_peak_lr: 0.0001
-          hifigan_epochs: 100
-          hifigan_n_train_segments: 8192
-          inference_comparison_nrows: 5
-          pitch_fmin: 65.4063949584961
-          pitch_fmax: 2093.004638671875
-          pitch_mean: 207.1428985595703
-          pitch_std: 151.80140686035156
-          export_quantization: QInt8
+          batch_size: 24
+          peak_lr: 0.0001
+          epochs: 5
+          n_train_segments: 16384
     outs:
     - path: trained_pipelines/caro/hifigan
       hash: md5
@@ -427,27 +379,29 @@ stages:
           speaker_name: caromopfen
           data_folder: data
           log_dir: trained_pipelines/caro
+          inference_comparison_nrows: 5
+          export_quantization: QInt8
           train_manifest_path: data/caromopfen/train_manifest.jsonl
           val_manifest_path: data/caromopfen/val_manifest.jsonl
-          sup_data_path: data/caromopfen/fastpitch_sup_data
-          fastpitch_max_dur: 13
-          fastpitch_batch_size: 16
-          fastpitch_peak_lr: 0.001
-          fastpitch_epochs: 50
-          fastpitch_pretrained_init_arg: 
-            +init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo
-          hifigan_pretrained_init_arg: 
-            +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
-          hifigan_batch_size: 24
-          hifigan_peak_lr: 0.0001
-          hifigan_epochs: 100
-          hifigan_n_train_segments: 8192
-          inference_comparison_nrows: 5
-          pitch_fmin: 65.4063949584961
-          pitch_fmax: 2093.004638671875
-          pitch_mean: 207.1428985595703
-          pitch_std: 151.80140686035156
-          export_quantization: QInt8
+          fastpitch:
+            sup_data_path: data/caromopfen/fastpitch_sup_data
+            max_dur: 13
+            batch_size: 16
+            peak_lr: 0.001
+            epochs: 50
+            pretrained_init_arg: 
+              +init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo
+            pitch_fmin: 65.4063949584961
+            pitch_fmax: 2093.004638671875
+            pitch_mean: 207.1428985595703
+            pitch_std: 151.80140686035156
+          hifigan:
+            pretrained_init_arg: 
+              +init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5
+            batch_size: 24
+            peak_lr: 0.0001
+            epochs: 5
+            n_train_segments: 16384
     outs:
     - path: trained_pipelines/caro/inference_comparison
       hash: md5
@@ -476,12 +430,12 @@ stages:
     outs:
     - path: trained_pipelines/caro/onnx/fastpitch.onnx
       hash: md5
-      md5: 9d908ea452dd2955832abeaa8acd6b65
-      size: 45338609
+      md5: 5316cdbb15af07c32177c43465886310
+      size: 175636077
     - path: trained_pipelines/caro/onnx/hifigan.onnx
       hash: md5
-      md5: e9a6e8edd4959ec90b42b9fde2b3b158
-      size: 22151503
+      md5: 62ce9912da412b4c35789c53a0a02b7d
+      size: 55783037
   export_onnx@Karlsson:
     cmd: python src/export.py --model-type tts --pretrained-path 
       trained_pipelines/Karlsson/fastpitch/checkpoints/default.nemo 
@@ -505,9 +459,85 @@ stages:
     outs:
     - path: trained_pipelines/Karlsson/onnx/fastpitch.onnx
       hash: md5
-      md5: 39b50552c00761a935fa6469f0bef02a
-      size: 45338610
+      md5: 0657e4c171253516f914c0fe440c4dfc
+      size: 175636078
     - path: trained_pipelines/Karlsson/onnx/hifigan.onnx
       hash: md5
-      md5: 3876e55233dab7de3e34af40f3d40352
-      size: 22151503
+      md5: f7d61ecbb78e077a1d6df6a1772898a7
+      size: 55783037
+  infer_onnx@caromopfen:
+    cmd: python src/infer_onnx.py --fastpitch-onnx 
+      trained_pipelines/caro/onnx/fastpitch.onnx --hifigan-onnx 
+      trained_pipelines/caro/onnx/hifigan.onnx --tokenizer-config 
+      src/configs/train_config_fastpitch.yaml --manifests 
+      data/caromopfen/train_manifest.jsonl --manifests 
+      data/caromopfen/val_manifest.jsonl --output-dir 
+      trained_pipelines/caro/onnx_inference_comparison --nrows 5
+    deps:
+    - path: data/caromopfen/train_manifest.jsonl
+      hash: md5
+      md5: 3526ae7fdea40abe245aa1048f5ff170
+      size: 450224
+    - path: data/caromopfen/val_manifest.jsonl
+      hash: md5
+      md5: f22786530c1c7f204b4058bd15c0ed8f
+      size: 51947
+    - path: src/configs/train_config_fastpitch.yaml
+      hash: md5
+      md5: 2863e8b32d51e4c66266d36e36a6451d
+      size: 6208
+    - path: trained_pipelines/caro/onnx/fastpitch.onnx
+      hash: md5
+      md5: 5316cdbb15af07c32177c43465886310
+      size: 175636077
+    - path: trained_pipelines/caro/onnx/hifigan.onnx
+      hash: md5
+      md5: 62ce9912da412b4c35789c53a0a02b7d
+      size: 55783037
+    params:
+      params.yaml:
+        speaker.caromopfen.inference_comparison_nrows: 5
+    outs:
+    - path: trained_pipelines/caro/onnx_inference_comparison
+      hash: md5
+      md5: caf363e36b731222a996cfb8c6a27d3b.dir
+      size: 7252408
+      nfiles: 10
+  infer_onnx@Karlsson:
+    cmd: python src/infer_onnx.py --fastpitch-onnx 
+      trained_pipelines/Karlsson/onnx/fastpitch.onnx --hifigan-onnx 
+      trained_pipelines/Karlsson/onnx/hifigan.onnx --tokenizer-config 
+      src/configs/train_config_fastpitch.yaml --manifests 
+      data/Karlsson/train_manifest.jsonl --manifests 
+      data/Karlsson/val_manifest.jsonl --output-dir 
+      trained_pipelines/Karlsson/onnx_inference_comparison --nrows 20
+    deps:
+    - path: data/Karlsson/train_manifest.jsonl
+      hash: md5
+      md5: ccebe061a844c93b9a5bc7b99f0c30d9
+      size: 6961138
+    - path: data/Karlsson/val_manifest.jsonl
+      hash: md5
+      md5: 7fb125e1bd3b884db093df4d5d6c143d
+      size: 763530
+    - path: src/configs/train_config_fastpitch.yaml
+      hash: md5
+      md5: 2863e8b32d51e4c66266d36e36a6451d
+      size: 6208
+    - path: trained_pipelines/Karlsson/onnx/fastpitch.onnx
+      hash: md5
+      md5: 0657e4c171253516f914c0fe440c4dfc
+      size: 175636078
+    - path: trained_pipelines/Karlsson/onnx/hifigan.onnx
+      hash: md5
+      md5: f7d61ecbb78e077a1d6df6a1772898a7
+      size: 55783037
+    params:
+      params.yaml:
+        speaker.Karlsson.inference_comparison_nrows: 20
+    outs:
+    - path: trained_pipelines/Karlsson/onnx_inference_comparison
+      hash: md5
+      md5: d63af02b6bba7a9af277642852bc6991.dir
+      size: 28429024
+      nfiles: 40

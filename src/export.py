@@ -11,7 +11,19 @@ def export_tts_model(pretrained_path: str, target_path: str, quantization: Quant
     if not target_path.endswith(".onnx"):
         raise ValueError("Target path must end with .onnx")
     model.export(target_path)
-    quantize_dynamic(target_path, target_path, weight_type=quantization)
+    quantize_dynamic(
+        target_path,
+        target_path,
+        weight_type=quantization,
+        op_types_to_quantize=[
+            "MatMul",
+            "Attention",
+            "LSTM",
+            "Gather",
+            "Transpose",
+            "EmbedLayerNormalization",
+        ],
+    )
     
 
 
@@ -22,7 +34,19 @@ def export_hifigan_model(pretrained_path: str, target_path: str, quantization: Q
     if not target_path.endswith(".onnx"):
         raise ValueError("Target path must end with .onnx")
     model.export(target_path)
-    quantize_dynamic(target_path, target_path, weight_type=quantization)
+    quantize_dynamic(
+        target_path,
+        target_path,
+        weight_type=quantization,
+        op_types_to_quantize=[
+            "MatMul",
+            "Attention",
+            "LSTM",
+            "Gather",
+            "Transpose",
+            "EmbedLayerNormalization",
+        ],
+    )
 
 
 def main(
