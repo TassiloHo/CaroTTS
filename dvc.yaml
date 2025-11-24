@@ -168,3 +168,25 @@ stages:
       - ${item.log_dir}/onnx_inference_comparison
 
 
+  export_torchaot:
+    foreach: ${speaker}
+    do:
+      cmd: >-
+        python src/export_torch_inductor.py
+        --model-type tts
+        --pretrained-path ${item.log_dir}/fastpitch/checkpoints/default.nemo
+        --target-dir ${item.log_dir}/aot_package
+        &&
+        python src/export_torch_inductor.py
+        --model-type hifigan
+        --pretrained-path ${item.log_dir}/hifigan/checkpoints/default.nemo
+        --target-dir ${item.log_dir}/aot_package
+      deps:
+      - ${item.log_dir}/fastpitch/checkpoints/default.nemo
+      - ${item.log_dir}/hifigan/checkpoints/default.nemo
+      params:
+      - speaker.${key}
+      outs:
+      - ${item.log_dir}/aot_package/fastpitch_encoder.pt2
+      - ${item.log_dir}/aot_package/fastpitch_decoder.pt2
+      - ${item.log_dir}/aot_package/hifigan.pt2
