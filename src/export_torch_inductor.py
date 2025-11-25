@@ -1,14 +1,10 @@
 from pathlib import Path
 import os
-from omegaconf import OmegaConf
 from models.fastspeech import FastSpeechModel
 from nemo.collections.tts.models import HifiGanModel
 import typer
 import torch
-from hydra.utils import instantiate
-# Import the specific classes to patch
 from nemo.collections.tts.modules.fastpitch import regulate_len, log_to_duration
-TOKENIZER_CFG = "/home/tassilo-holtzwart/Projects/Sotalis/CaroTTS/src/configs/train_config_fastpitch.yaml"
 torch.set_float32_matmul_precision("high")
 
 
@@ -121,14 +117,13 @@ class HiFiGANWrapper(torch.nn.Module):
         return self.generator(x=spec)
 
 
-def export_tts_model(pretrained_path: str, target_dir: str, device: str = "cpu"):
+def export_tts_model(pretrained_path: str, target_dir: str, device: str = "cuda"):
     """Export the TTS model to TorchInductor AOT."""
     os.environ['TORCH_LOGS'] = 'dynamic'
     os.environ['TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL'] = 'u0'
 
     model: FastSpeechModel = FastSpeechModel.restore_from(pretrained_path, map_location=device).eval()
-    tokenizer_cfg = OmegaConf.load(TOKENIZER_CFG).model.text_tokenizer
-    tokenizer = instantiate(tokenizer_cfg)
+    tokenizer = model.vocab
     
     test_text = "Hallo. Das ist ein Testsatz."
     tokens = torch.tensor(tokenizer.encode(test_text), dtype=torch.int64).unsqueeze(0).to(device)
@@ -187,7 +182,7 @@ def export_tts_model(pretrained_path: str, target_dir: str, device: str = "cpu")
     return output_path
 
 
-def export_hifigan_model(pretrained_path: str, target_dir: str, device: str = "cpu"):
+def export_hifigan_model(pretrained_path: str, target_dir: str, device: str = "cuda"):
     """Export the HiFi-GAN model to TorchInductor AOT."""
     model: HifiGanModel = HifiGanModel.restore_from(pretrained_path, map_location=device).eval()
 
