@@ -5,3 +5,48 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = ["nemo-toolkit[tts]", "torch==2.8.0", "torchaudio", "ml_dtypes>=0.5.0", "omegaconf", "hydra-core", "ipykernel", "dvc", "remotezip", "onnxruntime", "onnxscript"]
+
+[tool.ruff]
+# Exclude common directories
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+# Set the line length
+line-length = 100
+
+# Assume Python 3.11
+target-version = "py311"
+
+[tool.ruff.lint]
+# Enable these rule sets
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort (import sorting)
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "B",     # flake8-bugbear
+    "C4",    # flake8-comprehensions
+    "SIM",   # flake8-simplify
+    "PTH",   # flake8-use-pathlib
+]
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with 4 spaces
+indent-style = "space"
+
+# Use Unix-style line endings
+line-ending = "lf"

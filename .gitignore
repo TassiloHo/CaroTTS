@@ -3,3 +3,5 @@
 pretrained_models
 data
 trained_pipelines
+*.pyc
+__pycache__/

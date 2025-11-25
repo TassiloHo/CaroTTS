@@ -1,0 +1,123 @@
+name: Code Quality Checks
+
+on:
+  push:
+    branches:
+      - '**'  # Run on all branches
+
+jobs:
+  check-code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install ruff
+        run: |
+          pip install ruff
+      
+      - name: Run ruff linter
+        run: |
+          echo "Running ruff linter..."
+          # Run ruff with output format that shows file, line, and error
+          # Using --output-format=github for better integration with GitHub Actions
+          ruff check . --output-format=github || {
+            echo ""
+            echo "❌ Ruff found linting issues. Please fix them before committing."
+            exit 1
+          }
+          echo "✅ No linting issues found by ruff."
+      
+      - name: Run ruff formatter check
+        run: |
+          echo "Checking code formatting with ruff..."
+          # Check if code is formatted correctly (without modifying files)
+          ruff format --check . || {
+            echo ""
+            echo "❌ Code formatting issues found. Run 'ruff format .' to fix them."
+            exit 1
+          }
+          echo "✅ Code is properly formatted."
+      
+      - name: Check for absolute paths in Python files
+        run: |
+          echo "Checking for absolute paths in Python files..."
+          
+          # Find all Python files
+          python_files=$(find . -name "*.py" -type f)
+          
+          # Patterns to search for absolute paths
+          # Unix-like absolute paths: /home/, /usr/, /var/, /tmp/, /opt/, etc.
+          # Windows absolute paths: C:\, D:\, etc.
+          # Also check for common absolute path patterns
+          
+          errors=0
+          
+          for file in $python_files; do
+            # Skip __pycache__ directories
+            if [[ "$file" == *"__pycache__"* ]]; then
+              continue
+            fi
+            
+            # Check for Unix absolute paths (starting with /)
+            # Exclude common safe patterns like URLs, regex, comments
+            matches=$(grep -n -E '(^|[^:])(/home/|/usr/|/var/|/tmp/|/opt/|/root/|/mnt/)' "$file" | grep -v -E '(http://|https://|ftp://|#.*/)' || true)
+            
+            if [ ! -z "$matches" ]; then
+              echo "❌ Absolute Unix path found in $file:"
+              echo "$matches"
+              errors=$((errors + 1))
+            fi
+            
+            # Check for Windows absolute paths (C:\, D:\, etc.)
+            matches=$(grep -n -E '[A-Z]:\\' "$file" || true)
+            
+            if [ ! -z "$matches" ]; then
+              echo "❌ Absolute Windows path found in $file:"
+              echo "$matches"
+              errors=$((errors + 1))
+            fi
+          done
+          
+          if [ $errors -gt 0 ]; then
+            echo ""
+            echo "❌ Found $errors file(s) with absolute paths."
+            echo "Please use relative paths or configurable paths instead."
+            exit 1
+          else
+            echo "✅ No absolute paths found in Python files."
+          fi
+      
+      - name: Check for large files (>10MB)
+        run: |
+          echo "Checking for files larger than 10MB..."
+          
+          # Find files larger than 10MB (10485760 bytes)
+          large_files=$(find . -type f -size +10M)
+          
+          if [ ! -z "$large_files" ]; then
+            echo "❌ Found files larger than 10MB:"
+            for file in $large_files; do
+              size=$(du -h "$file" | cut -f1)
+              echo "  - $file ($size)"
+            done
+            echo ""
+            echo "Please do not commit large files directly to the repository."
+            echo "Consider using Git LFS or hosting large files externally."
+            exit 1
+          else
+            echo "✅ No files larger than 10MB found."
+          fi
+      
+      - name: Summary
+        if: success()
+        run: |
+          echo "✅ All code quality checks passed!"
