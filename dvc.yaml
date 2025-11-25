@@ -190,3 +190,6 @@ stages:
       - ${item.log_dir}/aot_package/fastpitch_encoder.pt2
       - ${item.log_dir}/aot_package/fastpitch_decoder.pt2
       - ${item.log_dir}/aot_package/hifigan.pt2
+      - ${item.log_dir}/aot_package/fastpitch_encoder_uncompiled.pt2
+      - ${item.log_dir}/aot_package/fastpitch_decoder_uncompiled.pt2
+      - ${item.log_dir}/aot_package/hifigan_uncompiled.pt2
