@@ -195,7 +195,7 @@ def export_hifigan_model(pretrained_path: str, target_dir: str, device: str = "c
     hifigan_wrapper = HiFiGANWrapper(model).eval()
 
     example_spectrogram = model.input_example()[0]["spec"]
-    time_dim = torch.export.Dim("time", min=1, max=256)
+    time_dim = torch.export.Dim("time", min=1, max=32768)
     exported = torch.export.export(
         hifigan_wrapper, (example_spectrogram,), dynamic_shapes={"spec": {2: time_dim}}
     )
