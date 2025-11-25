@@ -124,13 +124,13 @@ stages:
     foreach: ${speaker}
     do:
       cmd: >-
-        python src/export.py
+        python src/export_onnx.py
         --model-type tts
         --pretrained-path ${item.log_dir}/fastpitch/checkpoints/default.nemo
         --target-path ${item.log_dir}/onnx/fastpitch.onnx
         --quantization ${item.export_quantization}
         &&
-        python src/export.py
+        python src/export_onnx.py
         --model-type hifigan
         --pretrained-path ${item.log_dir}/hifigan/checkpoints/default.nemo
         --target-path ${item.log_dir}/onnx/hifigan.onnx
