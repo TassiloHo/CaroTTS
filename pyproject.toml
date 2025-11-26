@@ -18,6 +18,7 @@ exclude = [
     "build",
     "dist",
     "*.egg-info",
+    "*.ipynb",
 ]
 
 # Set the line length
