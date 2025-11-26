@@ -129,52 +129,97 @@ speaker:
 
 **Note**: Current parameters are optimized for a 12 GB GPU. Reduce `batch_size`, `max_dur`, or `n_train_segments` if you encounter out-of-memory errors.
 
-## 📁 Project Structure
 
-```
-CaroTTS/
-├── src/                          # Source code
-│   ├── prepare_hui_data.py      # Data preparation
-│   ├── train_fastpitch.py       # FastPitch training
-│   ├── train_hifigan.py         # HiFi-GAN training
-│   ├── generate_mels.py         # Mel-spectrogram generation
-│   ├── export_onnx.py           # ONNX export
-│   ├── export_torch_inductor.py # PyTorch Inductor export
-│   ├── infer_tts.py             # Inference script
-│   └── configs/                 # Training configurations
-├── data/                         # Training data
-├── trained_pipelines/           # Model checkpoints
-├── pretrained_models/           # Base models
-├── dvc.yaml                     # DVC pipeline definition
-├── params.yaml                  # Training parameters
-└── pyproject.toml              # Project dependencies
-```
+## 🎤 Training Data & Models
+
+CaroTTS is trained on the **HUI-Audio-Corpus-German** dataset, a high-quality German speech corpus. We provide two trained speaker models:
+
+- **Caro**: Available at [huggingface.co/Warholt/CaroTTS-60M-DE-Caro](https://huggingface.co/Warholt/CaroTTS-60M-DE-Caro)
+- **Karlsson**: Available at [huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson](https://huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson)
+
+Each model repository contains both the FastPitch and HiFi-GAN checkpoints in ONNX format for easy deployment.
 
 ## 🔄 Inference
 
-### Using Trained Models
+### Using Pre-trained Models
 
-```python
-from src.infer_tts import infer_tts
-
-# Generate speech from text
-audio = infer_tts(
-    text="Hallo, ich bin CaroTTS!",
-    fastpitch_model="trained_pipelines/caro/fastpitch/checkpoints/default.nemo",
-    hifigan_model="trained_pipelines/caro/hifigan/checkpoints/default.nemo"
-)
-```
-
-### Exported Models
-
-For production deployment, export to ONNX or PyTorch Inductor:
+Download the trained models from HuggingFace:
 
 ```bash
-# Export to ONNX
-python src/export_onnx.py --speaker caromopfen
+# Download Caro model
+wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Caro/resolve/main/fastpitch.onnx
+wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Caro/resolve/main/hifigan.onnx
 
-# Export to PyTorch Inductor (.pt2)
-python src/export_torch_inductor.py --speaker caromopfen
+# Or download Karlsson model
+wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson/resolve/main/fastpitch.onnx
+wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson/resolve/main/hifigan.onnx
+```
+
+### ONNX Inference (Recommended for Production)
+
+ONNX inference is lightweight, fast, and doesn't require PyTorch dependencies:
+
+```python
+import numpy as np
+import onnxruntime as ort
+import soundfile as sf
+from tokenizer import tokenize_german
+
+# Load models
+fastpitch_session = ort.InferenceSession("path/to/your/fastpitch.onnx")
+hifigan_session = ort.InferenceSession("path/to/your/hifigan.onnx")
+
+# Prepare text
+text = "Hallo, ich bin CaroTTS, ein deutsches Text-zu-Sprache-System."
+tokens = tokenize_german(text)
+
+# Prepare inputs
+paces = np.ones(len(tokens), dtype=np.float32)
+pitches = np.zeros(len(tokens), dtype=np.float32)
+
+inputs = {
+    "text": np.array([tokens], dtype=np.int64),
+    "pace": np.array([paces], dtype=np.float32),
+    "pitch": np.array([pitches], dtype=np.float32),
+}
+
+# Generate spectrogram
+spec = fastpitch_session.run(None, inputs)[0]
+
+# Generate audio
+audio = hifigan_session.run(None, {"spec": spec})[0]
+
+# Save audio
+sf.write("output.wav", audio.squeeze(), 44100)
+```
+
+### NeMo Inference (For Training & Development)
+
+If you're working with the NeMo models during development:
+
+```python
+import torch
+import soundfile as sf
+from nemo.collections.tts.models.fastpitch import FastPitchModel
+from nemo.collections.tts.models.hifigan import HifiGanModel
+from tokenizer import tokenize_german
+
+# Load models
+device = "cuda" if torch.cuda.is_available() else "cpu"
+fastpitch = FastPitchModel.restore_from("path/to/your/fastpitch.nemo", map_location=device).eval()
+hifigan = HifiGanModel.restore_from("path/to/your/hifigan.nemo", map_location=device).eval()
+
+# Prepare text
+text = "Guten Tag. Herzlich Willkommen zu dieser Demonstration. Es stehen Ihnen zwei Stimmen zur Auswahl: Caro und Karlsson. Sie können außerdem die Sprechgeschwindigkeit anpassen. Unten finden Sie ein Paar Beispielsätze. Probieren Sie es aus!"
+
+with torch.inference_mode():
+    # Parse and generate
+    parsed_text = fastpitch.parse(text)
+    spec = fastpitch.generate_spectrogram(tokens=parsed_text)
+    audio = hifigan.convert_spectrogram_to_audio(spec=spec)
+    
+    # Save audio
+    sf.write("output.wav", audio.squeeze().cpu().numpy(), 44100)
 ```
 
 ## 🤝 Contributing
