@@ -29,7 +29,7 @@ stages:
         python src/train_fastpitch.py
         --config-path configs
         --config-name train_config_fastpitch
-        log_dir=${item.log_dir}/fastpitch
+        log_dir=${item.log_dir}
         train_manifest=${item.train_manifest_path}
         validation_manifest=${item.val_manifest_path}
         sup_data_path=${item.fastpitch.sup_data_path}
@@ -47,7 +47,8 @@ stages:
       params:
       - speaker.${key}.fastpitch
       outs:
-      - ${item.log_dir}/fastpitch
+      - ${item.log_dir}/fastpitch:
+          persist: true
       - ${item.fastpitch.sup_data_path}
 
   generate_mels:
@@ -56,7 +57,7 @@ stages:
       cmd: >-
         python src/generate_mels.py
         --cpu
-        --fastpitch-model-ckpt ${item.log_dir}/fastpitch/checkpoints/default.nemo
+        --fastpitch-model-ckpt ${item.log_dir}/fastpitch/latest/checkpoints/fastpitch.nemo
         --input-json-manifests ${item.train_manifest_path} ${item.val_manifest_path}
         --output-json-manifest-root ${item.data_folder}/${item.speaker_name}/mel_manifests
       deps:
@@ -81,7 +82,7 @@ stages:
         --config-name train_config_hifigan
         train_dataset=${item.data_folder}/${item.speaker_name}/mel_manifests/train_manifest_mel.jsonl
         validation_datasets=${item.data_folder}/${item.speaker_name}/mel_manifests/val_manifest_mel.jsonl
-        log_dir=${item.log_dir}/hifigan
+        log_dir=${item.log_dir}
         batch_size=${item.hifigan.batch_size}
         model.optim.lr=${item.hifigan.peak_lr}
         trainer.max_epochs=${item.hifigan.epochs}
@@ -95,23 +96,24 @@ stages:
       - ${item.data_folder}/${item.speaker_name}/mel_manifests/val_manifest_mel.jsonl
       - ${item.data_folder}/${item.speaker_name}/mel_manifests/mels
       outs:
-      - ${item.log_dir}/hifigan
+      - ${item.log_dir}/hifigan:
+          persist: true
 
   infer_and_compare:
     foreach: ${speaker}
     do:
       cmd: >-
         python src/infer_tts.py
-        --fastpitch-model-ckpt ${item.log_dir}/fastpitch/checkpoints/default.nemo
-        --hifigan-model-ckpt ${item.log_dir}/hifigan/checkpoints/default.nemo
+        --fastpitch-model-ckpt ${item.log_dir}/fastpitch/latest/checkpoints/fastpitch.nemo
+        --hifigan-model-ckpt ${item.log_dir}/hifigan/latest/checkpoints/hifigan.nemo
         --manifests ${item.train_manifest_path}
         --manifests ${item.val_manifest_path}
         --output-dir ${item.log_dir}/inference_comparison
         --nrows ${item.inference_comparison_nrows}
         --device cuda
       deps:
-      - ${item.log_dir}/fastpitch/checkpoints/default.nemo
-      - ${item.log_dir}/hifigan/checkpoints/default.nemo
+      - ${item.log_dir}/fastpitch/latest/checkpoints/fastpitch.nemo
+      - ${item.log_dir}/hifigan/latest/checkpoints/hifigan.nemo
       - ${item.train_manifest_path}
       - ${item.val_manifest_path}
       params:
@@ -126,18 +128,18 @@ stages:
       cmd: >-
         python src/export_onnx.py
         --model-type tts
-        --pretrained-path ${item.log_dir}/fastpitch/checkpoints/default.nemo
+        --pretrained-path ${item.log_dir}/fastpitch/latest/checkpoints/fastpitch.nemo
         --target-path ${item.log_dir}/onnx/fastpitch.onnx
         --quantization ${item.export_quantization}
         &&
         python src/export_onnx.py
         --model-type hifigan
-        --pretrained-path ${item.log_dir}/hifigan/checkpoints/default.nemo
+        --pretrained-path ${item.log_dir}/hifigan/latest/checkpoints/hifigan.nemo
         --target-path ${item.log_dir}/onnx/hifigan.onnx
         --quantization ${item.export_quantization}
       deps:
-      - ${item.log_dir}/fastpitch/checkpoints/default.nemo
-      - ${item.log_dir}/hifigan/checkpoints/default.nemo
+      - ${item.log_dir}/fastpitch/latest/checkpoints/fastpitch.nemo
+      - ${item.log_dir}/hifigan/latest/checkpoints/hifigan.nemo
       params:
       - speaker.${key}.export_quantization
       outs:
@@ -151,7 +153,6 @@ stages:
         python src/infer_onnx.py
         --fastpitch-onnx ${item.log_dir}/onnx/fastpitch.onnx
         --hifigan-onnx ${item.log_dir}/onnx/hifigan.onnx
-        --tokenizer-config src/configs/train_config_fastpitch.yaml
         --manifests ${item.train_manifest_path}
         --manifests ${item.val_manifest_path}
         --output-dir ${item.log_dir}/onnx_inference_comparison
@@ -161,7 +162,6 @@ stages:
       - ${item.log_dir}/onnx/hifigan.onnx
       - ${item.train_manifest_path}
       - ${item.val_manifest_path}
-      - src/configs/train_config_fastpitch.yaml
       params:
       - speaker.${key}.inference_comparison_nrows
       outs:
@@ -174,16 +174,16 @@ stages:
       cmd: >-
         python src/export_torch_inductor.py
         --model-type tts
-        --pretrained-path ${item.log_dir}/fastpitch/checkpoints/default.nemo
+        --pretrained-path ${item.log_dir}/fastpitch/latest/checkpoints/fastpitch.nemo
         --target-dir ${item.log_dir}/aot_package
         &&
         python src/export_torch_inductor.py
         --model-type hifigan
-        --pretrained-path ${item.log_dir}/hifigan/checkpoints/default.nemo
+        --pretrained-path ${item.log_dir}/hifigan/latest/checkpoints/hifigan.nemo
         --target-dir ${item.log_dir}/aot_package
       deps:
-      - ${item.log_dir}/fastpitch/checkpoints/default.nemo
-      - ${item.log_dir}/hifigan/checkpoints/default.nemo
+      - ${item.log_dir}/fastpitch/latest/checkpoints/fastpitch.nemo
+      - ${item.log_dir}/hifigan/latest/checkpoints/hifigan.nemo
       params:
       - speaker.${key}
       outs:

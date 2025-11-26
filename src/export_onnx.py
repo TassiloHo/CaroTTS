@@ -1,10 +1,13 @@
-from models.fastspeech import FastSpeechModel
-from nemo.collections.tts.models import HifiGanModel
 import typer
-from onnxruntime.quantization import quantize_dynamic, QuantType
+from nemo.collections.tts.models import HifiGanModel
+from onnxruntime.quantization import QuantType, quantize_dynamic
+
+from models.fastspeech import FastSpeechModel
 
 
-def export_tts_model(pretrained_path: str, target_path: str, quantization: QuantType = QuantType.QInt8):
+def export_tts_model(
+    pretrained_path: str, target_path: str, quantization: QuantType = QuantType.QInt8
+):
     """Export the TTS model to ONNX format with optional quantization."""
     model = FastSpeechModel.restore_from(pretrained_path).eval()
     # make sure target path ends with .onnx
@@ -24,10 +27,11 @@ def export_tts_model(pretrained_path: str, target_path: str, quantization: Quant
             "EmbedLayerNormalization",
         ],
     )
-    
 
 
-def export_hifigan_model(pretrained_path: str, target_path: str, quantization: QuantType = QuantType.QInt8):
+def export_hifigan_model(
+    pretrained_path: str, target_path: str, quantization: QuantType = QuantType.QInt8
+):
     """Export the HiFi-GAN model to ONNX format with optional quantization."""
     model = HifiGanModel.restore_from(pretrained_path).eval()
     # make sure target path ends with .onnx

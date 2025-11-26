@@ -224,9 +224,10 @@ trainer:
   benchmark: false
 
 exp_manager:
-  # exp_dir: null
-  # name: ${name}
-  explicit_log_dir: ${log_dir}
+  exp_dir: ${log_dir}
+  name: fastpitch
+  version: latest
+  # explicit_log_dir: ${log_dir}
   create_tensorboard_logger: true
   create_checkpoint_callback: true
   checkpoint_callback_params:

@@ -14,7 +14,7 @@ window: hann
 
 batch_size: 16
 
-train_n_segments: 16384
+train_n_segments: ???
 train_max_duration: 30
 train_min_duration: 1
 
@@ -117,10 +117,16 @@ trainer:
   benchmark: false
 
 exp_manager:
-  explicit_log_dir: ${log_dir}
+  exp_dir: ${log_dir}
+  name: hifigan
+  version: latest
+  # explicit_log_dir: ${log_dir}
   create_tensorboard_logger: true
   create_checkpoint_callback: true
   checkpoint_callback_params:
+    save_top_k: 0
+    save_last: false
+    always_save_nemo: true
     monitor: val_loss
     mode: min
   create_wandb_logger: false

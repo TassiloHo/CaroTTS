@@ -20,10 +20,10 @@ speaker:
       pitch_std: 151.80140686035156
     hifigan:
       pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"  # Set to "++init_from_nemo_model=/path/to/model.nemo" or "" when needed
-      batch_size: 24
+      batch_size: 8
       peak_lr: 0.0001
-      epochs: 5
-      n_train_segments: 16384
+      epochs: 20
+      n_train_segments: 51200
 
   Karlsson:
     speaker_name: Karlsson
@@ -47,10 +47,10 @@ speaker:
 
     hifigan:
       pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"
-      batch_size: 24
+      batch_size: 8
       peak_lr: 0.0001
       epochs: 5
-      n_train_segments: 16384
+      n_train_segments: 51200
 
 
 

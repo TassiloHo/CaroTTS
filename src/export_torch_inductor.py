@@ -1,10 +1,13 @@
-from pathlib import Path
 import os
-from models.fastspeech import FastSpeechModel
-from nemo.collections.tts.models import HifiGanModel
-import typer
+from pathlib import Path
+
 import torch
-from nemo.collections.tts.modules.fastpitch import regulate_len, log_to_duration
+import typer
+from nemo.collections.tts.models import HifiGanModel
+from nemo.collections.tts.modules.fastpitch import log_to_duration, regulate_len
+
+from models.fastspeech import FastSpeechModel
+
 torch.set_float32_matmul_precision("high")
 
 
@@ -19,14 +22,10 @@ class FastPitchEncoder(torch.nn.Module):
         self.pitch_emb = fastpitch_module.pitch_emb
         self.energy_predictor = fastpitch_module.energy_predictor
         self.energy_emb = (
-            fastpitch_module.energy_emb
-            if hasattr(fastpitch_module, "energy_emb")
-            else None
+            fastpitch_module.energy_emb if hasattr(fastpitch_module, "energy_emb") else None
         )
         self.speaker_emb = (
-            fastpitch_module.speaker_emb
-            if hasattr(fastpitch_module, "speaker_emb")
-            else None
+            fastpitch_module.speaker_emb if hasattr(fastpitch_module, "speaker_emb") else None
         )
         self.min_token_duration = fastpitch_module.min_token_duration
         self.max_token_duration = fastpitch_module.max_token_duration
@@ -66,7 +65,10 @@ class FastPitchEncoder(torch.nn.Module):
         # Predict duration and pitch
         log_durs_predicted = self.duration_predictor(enc_out, enc_mask, conditioning=spk_emb)
         durs_predicted = log_to_duration(
-            log_dur=log_durs_predicted, min_dur=self.min_token_duration, max_dur=self.max_token_duration, mask=enc_mask
+            log_dur=log_durs_predicted,
+            min_dur=self.min_token_duration,
+            max_dur=self.max_token_duration,
+            mask=enc_mask,
         )
         pitch_predicted = self.pitch_predictor(enc_out, enc_mask, conditioning=spk_emb) + pitch
         pitch_emb = self.pitch_emb(pitch_predicted.unsqueeze(1))
@@ -74,10 +76,14 @@ class FastPitchEncoder(torch.nn.Module):
 
         if self.energy_predictor is not None:
             if energy is not None:
-                assert energy.shape[-1] == text.shape[-1], f"energy.shape[-1]: {energy.shape[-1]} != len(text)"
+                assert energy.shape[-1] == text.shape[-1], (
+                    f"energy.shape[-1]: {energy.shape[-1]} != len(text)"
+                )  # noqa: E501
                 energy_emb = self.energy_emb(energy)
             else:
-                energy_pred = self.energy_predictor(enc_out, enc_mask, conditioning=spk_emb).squeeze(-1)
+                energy_pred = self.energy_predictor(
+                    enc_out, enc_mask, conditioning=spk_emb
+                ).squeeze(-1)
                 energy_emb = self.energy_emb(energy_pred.unsqueeze(1))
             enc_out = enc_out + energy_emb.transpose(1, 2)
 
@@ -119,12 +125,14 @@ class HiFiGANWrapper(torch.nn.Module):
 
 def export_tts_model(pretrained_path: str, target_dir: str, device: str = "cuda"):
     """Export the TTS model to TorchInductor AOT."""
-    os.environ['TORCH_LOGS'] = 'dynamic'
-    os.environ['TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL'] = 'u0'
+    os.environ["TORCH_LOGS"] = "dynamic"
+    os.environ["TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL"] = "u0"
 
-    model: FastSpeechModel = FastSpeechModel.restore_from(pretrained_path, map_location=device).eval()
+    model: FastSpeechModel = FastSpeechModel.restore_from(
+        pretrained_path, map_location=device
+    ).eval()
     tokenizer = model.vocab
-    
+
     test_text = "Hallo. Das ist ein Testsatz."
     tokens = torch.tensor(tokenizer.encode(test_text), dtype=torch.int64).unsqueeze(0).to(device)
     paces = torch.randn_like(tokens, dtype=torch.float32).clamp(-0.2, 2) + 1.0

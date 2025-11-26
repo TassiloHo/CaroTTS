@@ -1,7 +1,6 @@
-import os
 import urllib.request
 from pathlib import Path
-from typing import List
+
 import typer
 import yaml
 
@@ -21,10 +20,10 @@ def download_if_not_exists(filename, pretrained_dir, base_url):
         return
 
     download_url = f"{base_url}/{filename}?download=true"
-    
+
     print(f"Downloading {filename} from HuggingFace...")
-    os.makedirs(pretrained_dir, exist_ok=True)
-    
+    Path(pretrained_dir).mkdir(parents=True, exist_ok=True)
+
     try:
         urllib.request.urlretrieve(download_url, destination)
         print(f"✓ Successfully downloaded: {destination}")
@@ -46,7 +45,7 @@ def main(
     Path(pretrained_dir).mkdir(parents=True, exist_ok=True)
 
     # Read model filenames from params.yaml
-    with open(params_file, "r") as f:
+    with Path(params_file).open("r") as f:
         params = yaml.safe_load(f)
 
     model_filenames = params.get("pretrained_downloads", [])
