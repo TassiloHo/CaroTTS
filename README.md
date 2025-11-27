@@ -150,12 +150,12 @@ Download the trained models from HuggingFace:
 
 ```bash
 # Download Caro model
-wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Caro/resolve/main/fastpitch.onnx
-wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Caro/resolve/main/hifigan.onnx
+wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Caro/resolve/main/caro_fastpitch.onnx
+wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Caro/resolve/main/caro_hifigan.onnx
 
 # Or download Karlsson model
-wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson/resolve/main/fastpitch.onnx
-wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson/resolve/main/hifigan.onnx
+wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson/resolve/main/karlsson_fastpitch.onnx
+wget https://huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson/resolve/main/karlsson_hifigan.onnx
 ```
 
 ### ONNX Inference (Recommended for Production)
