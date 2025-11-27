@@ -18,6 +18,7 @@ Training and deploying high-quality Text-to-Speech (TTS) models has traditionall
 - **Lightweight Models**: Non-autoregressive TTS models under 60M parameters
 - **CPU-Friendly**: Fast inference on CPUs and even mobile devices
 - **Simplified Training**: No pitch information required, reducing data preparation time
+- **Train on Consumer GPUs**: Train a TTS model in under 1h on a single consumer gpu
 - **Full Pipeline**: Complete workflow from data collection to deployment
 - **Reproducible**: Automated training pipeline using DVC (Data Version Control)
 
@@ -41,11 +42,22 @@ This non-autoregressive approach allows for **extremely fast inference** while m
 - 🎓 **Educational**: Learn the full TTS training workflow
 
 
+## 🎤 Training Data & Models
+
+CaroTTS is trained on the **HUI-Audio-Corpus-German** dataset, a high-quality German speech corpus. We provide two trained speaker models:
+
+- **Caro**: Available at [huggingface.co/Warholt/CaroTTS-60M-DE-Caro](https://huggingface.co/Warholt/CaroTTS-60M-DE-Caro)
+- **Karlsson**: Available at [huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson](https://huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson)
+
+Each model repository contains both the FastPitch and HiFi-GAN checkpoints in ONNX format for easy deployment.
+
+
 ## 🚀 Try It Out
 
 Try the trained models online without any setup:
 
 👉 **[CaroTTS Demo on HuggingFace Spaces](https://huggingface.co/spaces/Warholt/CaroTTS-DE)**
+
 
 ## 📋 Prerequisites
 
@@ -109,35 +121,26 @@ dvc repro train_fastpitch@caromopfen
 dvc repro train_hifigan@Karlsson
 ```
 
-### Customizing Training Parameters
+### Customizing Training Parameters for your GPU Memory:
 
-Edit `params.yaml` to adjust training settings:
+Parameters are chosen for 12GB Nvidia GPUs. Edit the following parameters in `params.yaml` to suit your GPU memory.:
 
 ```yaml
 speaker:
   your_speaker:
     fastpitch:
-      batch_size: 16          # Adjust for your GPU memory
-      max_dur: 13             # Maximum audio duration in seconds, adjust for your GPU memory
-      epochs: 50
-      peak_lr: 0.001
+      batch_size: 16          # Training batch size
+      val_batch_size: 16      # Validation batch size
+      max_dur: 13             # Maximum training audio duration in seconds
+      val_max_dur: 13         # Maximum validation audio duration in seconds
     hifigan:
-      batch_size: 4           # Adjust for your GPU memory
-      n_train_segments: 88200 # Length of audio segments in Hz, adjust for your GPU memory 
-      epochs: 5
+      batch_size: 4           # Training batch size
+      val_batch_size: 4       # Validation batch size
+      n_train_segments: 88200 # Length of training audio segments in Hz
+      val_n_segments: 131072  # Length of validation audio segments in Hz
+      val_max_duration: 30    # Maximum validation audio duration in seconds
+      val_min_duration: 3     # Minimum validation audio duration in seconds
 ```
-
-**Note**: Current parameters are optimized for a 12 GB GPU. Reduce `batch_size`, `max_dur`, or `n_train_segments` if you encounter out-of-memory errors.
-
-
-## 🎤 Training Data & Models
-
-CaroTTS is trained on the **HUI-Audio-Corpus-German** dataset, a high-quality German speech corpus. We provide two trained speaker models:
-
-- **Caro**: Available at [huggingface.co/Warholt/CaroTTS-60M-DE-Caro](https://huggingface.co/Warholt/CaroTTS-60M-DE-Caro)
-- **Karlsson**: Available at [huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson](https://huggingface.co/Warholt/CaroTTS-60M-DE-Karlsson)
-
-Each model repository contains both the FastPitch and HiFi-GAN checkpoints in ONNX format for easy deployment.
 
 ## 🔄 Inference
 

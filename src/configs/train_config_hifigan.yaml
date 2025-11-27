@@ -13,6 +13,7 @@ highfreq: null
 window: hann
 
 batch_size: 16
+val_batch_size: ${batch_size}
 
 train_n_segments: ???
 train_max_duration: 30
@@ -87,7 +88,7 @@ model:
     dataloader_params:
       drop_last: false
       shuffle: false
-      batch_size: ${batch_size}
+      batch_size: ${val_batch_size}
       num_workers: 16
       pin_memory: true
 

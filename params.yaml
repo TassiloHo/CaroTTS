@@ -18,12 +18,18 @@ speaker:
       pitch_fmax: 2093.004638671875
       pitch_mean: 207.1428985595703
       pitch_std: 151.80140686035156
+      val_batch_size: 16
+      val_max_dur: 13
     hifigan:
       pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"  # Set to "++init_from_nemo_model=/path/to/model.nemo" or "" when needed
       batch_size: 8
       peak_lr: 0.0001
       epochs: 20
       n_train_segments: 51200
+      val_batch_size: 8
+      val_n_segments: 131072
+      val_max_duration: 30
+      val_min_duration: 3
 
   Karlsson:
     speaker_name: Karlsson
@@ -44,6 +50,8 @@ speaker:
       pitch_std: 23.765565872192383
       pitch_fmax: 355.3326416015625
       pitch_fmin: 65.4063949584961
+      val_batch_size: 16
+      val_max_dur: 13
 
     hifigan:
       pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"
@@ -51,6 +59,10 @@ speaker:
       peak_lr: 0.0001
       epochs: 5
       n_train_segments: 51200
+      val_batch_size: 8
+      val_n_segments: 131072
+      val_max_duration: 30
+      val_min_duration: 3
 
 
 

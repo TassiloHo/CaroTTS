@@ -35,6 +35,8 @@ stages:
         sup_data_path=${item.fastpitch.sup_data_path}
         max_duration=${item.fastpitch.max_dur}
         batch_size=${item.fastpitch.batch_size}
+        val_batch_size=${item.fastpitch.val_batch_size}
+        val_max_duration=${item.fastpitch.val_max_dur}
         model.optim.lr=${item.fastpitch.peak_lr}
         trainer.max_epochs=${item.fastpitch.epochs}
         pitch_fmin=${item.fastpitch.pitch_fmin}
@@ -84,9 +86,13 @@ stages:
         validation_datasets=${item.data_folder}/${item.speaker_name}/mel_manifests/val_manifest_mel.jsonl
         log_dir=${item.log_dir}
         batch_size=${item.hifigan.batch_size}
+        val_batch_size=${item.hifigan.val_batch_size}
         model.optim.lr=${item.hifigan.peak_lr}
         trainer.max_epochs=${item.hifigan.epochs}
         train_n_segments=${item.hifigan.n_train_segments}
+        val_n_segments=${item.hifigan.val_n_segments}
+        val_max_duration=${item.hifigan.val_max_duration}
+        val_min_duration=${item.hifigan.val_min_duration}
         ${item.hifigan.pretrained_init_arg}
       params:
       - speaker.${key}.hifigan

@@ -4,6 +4,8 @@ sup_data_path: ???
 log_dir: ???
 max_duration: ???
 batch_size: ???
+val_batch_size: ${batch_size}
+val_max_duration: ${max_duration}
 pitch_fmin: 65.4063949584961
 pitch_fmax: 2093.004638671875
 pitch_mean: 200
@@ -109,7 +111,7 @@ model:
       n_mels: ${model.n_mel_channels}
       lowfreq: ${model.lowfreq}
       highfreq: ${model.highfreq}
-      max_duration: ${max_duration}  # change to null to include longer audios.
+      max_duration: ${val_max_duration}  # change to null to include longer audios.
       min_duration: 0.1
       ignore_file: null
       trim: true
@@ -125,7 +127,7 @@ model:
     dataloader_params:
       drop_last: false
       shuffle: false
-      batch_size: ${batch_size}
+      batch_size: ${val_batch_size}
       num_workers: 16
       pin_memory: true
 
