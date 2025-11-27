@@ -1,55 +1,20 @@
-import argparse
 import json
 from pathlib import Path
 
 import numpy as np
 import soundfile as sf
 import torch
+import typer
 from joblib import Parallel, delayed
-from tqdm import tqdm
-
 from nemo.collections.tts.models import FastPitchModel
 from nemo.collections.tts.parts.utils.tts_dataset_utils import (
     BetaBinomialInterpolator,
     beta_binomial_prior_distribution,
 )
 from nemo.utils import logging
+from tqdm import tqdm
 
-
-def get_args():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description="Generate mel spectrograms with pretrained FastPitch model, and create manifests for finetuning Hifigan.",
-    )
-    parser.add_argument(
-        "--fastpitch-model-ckpt",
-        required=True,
-        type=Path,
-        help="Specify a full path of a fastpitch model checkpoint with the suffix of either .ckpt or .nemo.",
-    )
-    parser.add_argument(
-        "--input-json-manifests",
-        nargs="+",
-        required=True,
-        type=Path,
-        help="Specify a full path of a JSON manifest. You could add multiple manifests.",
-    )
-    parser.add_argument(
-        "--output-json-manifest-root",
-        required=True,
-        type=Path,
-        help="Specify a full path of output root that would contain new manifests.",
-    )
-    parser.add_argument(
-        "--num-workers",
-        default=-1,
-        type=int,
-        help="Specify the max number of concurrently Python workers processes. "
-        "If -1 all CPUs are used. If 1 no parallel computing is used.",
-    )
-    parser.add_argument("--cpu", action='store_true', default=False, help="Generate mel spectrograms using CPUs.")
-    args = parser.parse_args()
-    return args
+app = typer.Typer(help="Generate mel spectrograms and manifests with pretrained FastPitch model.")
 
 
 def __load_wav(audio_file):
@@ -59,7 +24,6 @@ def __load_wav(audio_file):
 
 
 def __generate_mels(entry, spec_model, device, use_beta_binomial_interpolator, mel_root):
-    # Generate a spectrograms (we need to use ground truth alignment for correct matching between audio and mels)
     audio = __load_wav(entry["audio_filepath"])
     audio = torch.from_numpy(audio).unsqueeze(0).to(device)
     audio_len = torch.tensor(audio.shape[1], dtype=torch.long, device=device).unsqueeze(0)
@@ -88,12 +52,19 @@ def __generate_mels(entry, spec_model, device, use_beta_binomial_interpolator, m
             )
         else:
             attn_prior = (
-                torch.from_numpy(beta_binomial_prior_distribution(text_len.item(), spect_len.item()))
+                torch.from_numpy(
+                    beta_binomial_prior_distribution(text_len.item(), spect_len.item())
+                )
                 .unsqueeze(0)
                 .to(text.device)
             )
         spectrogram = spec_model.forward(
-            text=text, input_lens=text_len, spec=spect[...,:spect_len], mel_lens=spect_len, attn_prior=attn_prior, speaker=speaker,
+            text=text,
+            input_lens=text_len,
+            spec=spect[..., :spect_len],
+            mel_lens=spect_len,
+            attn_prior=attn_prior,
+            speaker=speaker,
         )[0]
 
         save_path = mel_root / f"{Path(entry['audio_filepath']).stem}.npy"
@@ -103,11 +74,33 @@ def __generate_mels(entry, spec_model, device, use_beta_binomial_interpolator, m
     return entry
 
 
-def main():
-    args = get_args()
-    ckpt_path = args.fastpitch_model_ckpt
-    input_manifest_filepaths = args.input_json_manifests
-    output_json_manifest_root = args.output_json_manifest_root
+@app.command()
+def main(
+    fastpitch_model_ckpt: Path = typer.Option(
+        ...,
+        help="Full path of a fastpitch model checkpoint with the suffix of either .ckpt or .nemo.",
+    ),
+    input_json_manifests: list[Path] = typer.Option(
+        ...,
+        help="Full path of a JSON manifest. You can add multiple manifests.",
+    ),
+    output_json_manifest_root: Path = typer.Option(
+        ...,
+        help="Full path of output root that would contain new manifests.",
+    ),
+    num_workers: int = typer.Option(
+        -1,
+        help="Max number of concurrent Python worker processes. "
+        "If -1 all CPUs are used. If 1 no parallel computing is used.",
+    ),
+    cpu: bool = typer.Option(
+        False,
+        help="Generate mel spectrograms using CPUs.",
+    ),
+):
+    """Generate mel spectrograms and create manifests for finetuning."""
+    ckpt_path = fastpitch_model_ckpt
+    input_manifest_filepaths = input_json_manifests
 
     mel_root = output_json_manifest_root / "mels"
     mel_root.mkdir(exist_ok=True, parents=True)
@@ -120,36 +113,42 @@ def main():
         spec_model = FastPitchModel.load_from_checkpoint(ckpt_path).eval()
     else:
         raise ValueError(f"Unsupported suffix: {suffix}")
-    if not args.cpu:
+    if not cpu:
         spec_model.cuda()
     device = spec_model.device
 
-    use_beta_binomial_interpolator = spec_model.cfg.train_ds.dataset.get("use_beta_binomial_interpolator", False)
+    use_beta_binomial_interpolator = spec_model.cfg.train_ds.dataset.get(
+        "use_beta_binomial_interpolator", False
+    )
 
     for manifest in input_manifest_filepaths:
         logging.info(f"Processing {manifest}.")
         entries = []
-        with open(manifest, "r") as fjson:
+        with Path(manifest).open("r") as fjson:
             for line in fjson:
                 entries.append(json.loads(line.strip()))
 
         if device == "cpu":
-            new_entries = Parallel(n_jobs=args.num_workers)(
-                delayed(__generate_mels)(entry, spec_model, device, use_beta_binomial_interpolator, mel_root)
+            new_entries = Parallel(n_jobs=num_workers)(
+                delayed(__generate_mels)(
+                    entry, spec_model, device, use_beta_binomial_interpolator, mel_root
+                )
                 for entry in entries
             )
         else:
             new_entries = []
             for entry in tqdm(entries):
-                new_entry = __generate_mels(entry, spec_model, device, use_beta_binomial_interpolator, mel_root)
+                new_entry = __generate_mels(
+                    entry, spec_model, device, use_beta_binomial_interpolator, mel_root
+                )
                 new_entries.append(new_entry)
 
         mel_manifest_path = output_json_manifest_root / f"{manifest.stem}_mel{manifest.suffix}"
-        with open(mel_manifest_path, "w") as fmel:
+        with Path(mel_manifest_path).open("w") as fmel:
             for entry in new_entries:
                 fmel.write(json.dumps(entry) + "\n")
         logging.info(f"Processing {manifest} is complete --> {mel_manifest_path}")
 
 
 if __name__ == "__main__":
-    main()
+    app()

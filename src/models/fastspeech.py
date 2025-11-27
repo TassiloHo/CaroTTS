@@ -1,5 +1,11 @@
-from nemo.collections.tts.models.fastpitch import FastPitchModel, process_batch, plot_alignment_to_numpy, plot_spectrogram_to_numpy, TensorBoardLogger
 import torch
+from nemo.collections.tts.models.fastpitch import (
+    FastPitchModel,
+    TensorBoardLogger,
+    plot_alignment_to_numpy,
+    plot_spectrogram_to_numpy,
+    process_batch,
+)
 
 
 class FastSpeechModel(FastPitchModel):
@@ -8,10 +14,9 @@ class FastSpeechModel(FastPitchModel):
     This model extends the FastPitchModel to also work without pitch prediction.
 
     """
+
     def __init__(self, cfg, trainer=None):
         super().__init__(cfg=cfg, trainer=trainer)
-
-
 
     def training_step(self, batch, batch_idx):
         attn_prior, durs, speaker, energy, reference_audio, reference_audio_len = (
@@ -23,7 +28,10 @@ class FastSpeechModel(FastPitchModel):
             None,
         )
         if self.learn_alignment:
-            if self.ds_class == "nemo.collections.tts.data.text_to_speech_dataset.TextToSpeechDataset":
+            if (
+                self.ds_class
+                == "nemo.collections.tts.data.text_to_speech_dataset.TextToSpeechDataset"
+            ):
                 batch_dict = batch
             else:
                 batch_dict = process_batch(batch, self._train_dl.dataset.sup_data_types_set)
@@ -78,16 +86,33 @@ class FastSpeechModel(FastPitchModel):
             durs = attn_hard_dur
 
         mel_loss = self.mel_loss_fn(spect_predicted=mels_pred, spect_tgt=mels)
-        dur_loss = self.duration_loss_fn(log_durs_predicted=log_durs_pred, durs_tgt=durs, len=text_lens)
+        dur_loss = self.duration_loss_fn(
+            log_durs_predicted=log_durs_pred, durs_tgt=durs, len=text_lens
+        )
         loss = mel_loss + dur_loss
         if self.learn_alignment:
-            ctc_loss = self.forward_sum_loss_fn(attn_logprob=attn_logprob, in_lens=text_lens, out_lens=spec_len)
+            ctc_loss = self.forward_sum_loss_fn(
+                attn_logprob=attn_logprob, in_lens=text_lens, out_lens=spec_len
+            )
             bin_loss_weight = min(self.current_epoch / self.bin_loss_warmup_epochs, 1.0) * 1.0
-            bin_loss = self.bin_loss_fn(hard_attention=attn_hard, soft_attention=attn_soft) * bin_loss_weight
+            bin_loss = (
+                self.bin_loss_fn(hard_attention=attn_hard, soft_attention=attn_soft)
+                * bin_loss_weight
+            )
             loss += ctc_loss + bin_loss
 
-        pitch_loss = self.pitch_loss_fn(pitch_predicted=pitch_pred, pitch_tgt=pitch, len=text_lens) if pitch is not None else 0.0
-        energy_loss = self.energy_loss_fn(energy_predicted=energy_pred, energy_tgt=energy_tgt, length=text_lens) if energy_tgt is not None else 0.0 # done in loss anyway but for clarity
+        pitch_loss = (
+            self.pitch_loss_fn(pitch_predicted=pitch_pred, pitch_tgt=pitch, len=text_lens)
+            if pitch is not None
+            else 0.0
+        )
+        energy_loss = (
+            self.energy_loss_fn(
+                energy_predicted=energy_pred, energy_tgt=energy_tgt, length=text_lens
+            )
+            if energy_tgt is not None
+            else 0.0
+        )  # done in loss anyway but for clarity
         loss += pitch_loss + energy_loss
 
         self.log("t_loss", loss)
@@ -145,7 +170,10 @@ class FastSpeechModel(FastPitchModel):
             None,
         )
         if self.learn_alignment:
-            if self.ds_class == "nemo.collections.tts.data.text_to_speech_dataset.TextToSpeechDataset":
+            if (
+                self.ds_class
+                == "nemo.collections.tts.data.text_to_speech_dataset.TextToSpeechDataset"
+            ):
                 batch_dict = batch
             else:
                 batch_dict = process_batch(batch, self._train_dl.dataset.sup_data_types_set)
@@ -201,9 +229,21 @@ class FastSpeechModel(FastPitchModel):
             durs = attn_hard_dur
 
         mel_loss = self.mel_loss_fn(spect_predicted=mels_pred, spect_tgt=mels)
-        dur_loss = self.duration_loss_fn(log_durs_predicted=log_durs_pred, durs_tgt=durs, len=text_lens)
-        pitch_loss = self.pitch_loss_fn(pitch_predicted=pitch_pred, pitch_tgt=pitch, len=text_lens) if pitch is not None else 0.0
-        energy_loss = self.energy_loss_fn(energy_predicted=energy_pred, energy_tgt=energy_tgt, length=text_lens) if energy_tgt is not None else 0.0 # done in loss anyway but for clarity
+        dur_loss = self.duration_loss_fn(
+            log_durs_predicted=log_durs_pred, durs_tgt=durs, len=text_lens
+        )
+        pitch_loss = (
+            self.pitch_loss_fn(pitch_predicted=pitch_pred, pitch_tgt=pitch, len=text_lens)
+            if pitch is not None
+            else 0.0
+        )
+        energy_loss = (
+            self.energy_loss_fn(
+                energy_predicted=energy_pred, energy_tgt=energy_tgt, length=text_lens
+            )
+            if energy_tgt is not None
+            else 0.0
+        )  # done in loss anyway but for clarity
         loss = mel_loss + dur_loss + pitch_loss + energy_loss
 
         val_outputs = {
@@ -221,6 +261,7 @@ class FastSpeechModel(FastPitchModel):
     def on_validation_epoch_end(self):
         def collect(key):
             return torch.stack([x[key] for x in self.validation_step_outputs]).mean()
+
         val_loss = collect("val_loss")
         mel_loss = collect("mel_loss")
         dur_loss = collect("dur_loss")
@@ -252,4 +293,3 @@ class FastSpeechModel(FastPitchModel):
             )
             self.log_train_images = True
         self.validation_step_outputs.clear()  # free memory)
-    

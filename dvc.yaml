@@ -60,7 +60,8 @@ stages:
         python src/generate_mels.py
         --cpu
         --fastpitch-model-ckpt ${item.log_dir}/fastpitch/latest/checkpoints/fastpitch.nemo
-        --input-json-manifests ${item.train_manifest_path} ${item.val_manifest_path}
+        --input-json-manifests ${item.train_manifest_path}
+        --input-json-manifests ${item.val_manifest_path}
         --output-json-manifest-root ${item.data_folder}/${item.speaker_name}/mel_manifests
       deps:
       - ${item.log_dir}/fastpitch

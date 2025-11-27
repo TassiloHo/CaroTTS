@@ -1,9 +1,10 @@
 import lightning.pytorch as pl
+import torch
+from nemo.collections.tts.models import HifiGanModel
 from nemo.core.config import hydra_runner
 from nemo.utils.exp_manager import exp_manager
-from nemo.collections.tts.models import HifiGanModel
-import torch
 from omegaconf import DictConfig
+
 torch.set_float32_matmul_precision('medium')
 
 @hydra_runner(config_path="configs", config_name="")

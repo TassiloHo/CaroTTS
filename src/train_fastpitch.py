@@ -1,10 +1,12 @@
 import lightning.pytorch as pl
-from nemo.core.config import hydra_runner
-from nemo.collections.common.callbacks import LogEpochTimeCallback
-from nemo.utils.exp_manager import exp_manager
-from models.fastspeech import FastSpeechModel
 import torch
+from nemo.collections.common.callbacks import LogEpochTimeCallback
+from nemo.core.config import hydra_runner
+from nemo.utils.exp_manager import exp_manager
 from omegaconf import DictConfig
+
+from models.fastspeech import FastSpeechModel
+
 torch.set_float32_matmul_precision('medium')
 
 @hydra_runner(config_path="configs", config_name="")
