@@ -39,10 +39,6 @@ stages:
         val_max_duration=${item.fastpitch.val_max_dur}
         model.optim.lr=${item.fastpitch.peak_lr}
         trainer.max_epochs=${item.fastpitch.epochs}
-        pitch_fmin=${item.fastpitch.pitch_fmin}
-        pitch_fmax=${item.fastpitch.pitch_fmax}
-        pitch_mean=${item.fastpitch.pitch_mean}
-        pitch_std=${item.fastpitch.pitch_std}
         ${item.fastpitch.pretrained_init_arg}
       deps:
       - src/configs/train_config_fastpitch.yaml

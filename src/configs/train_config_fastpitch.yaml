@@ -6,10 +6,6 @@ max_duration: ???
 batch_size: ???
 val_batch_size: ${batch_size}
 val_max_duration: ${max_duration}
-pitch_fmin: 65.4063949584961
-pitch_fmax: 2093.004638671875
-pitch_mean: 200
-pitch_std: 100
 sup_data_types: [ "align_prior_matrix"]
 
 
@@ -32,11 +28,6 @@ model:
   symbols_embedding_dim: 384
   pitch_embedding_kernel_size: 3
 
-  pitch_fmin: ${pitch_fmin}
-  pitch_fmax: ${pitch_fmax}
-
-  pitch_mean: ${pitch_mean}
-  pitch_std: ${pitch_std}
 
   sample_rate: ${sample_rate}
   n_mel_channels: ${n_mel_channels}
@@ -84,11 +75,6 @@ model:
       trim_top_db: 50
       trim_frame_length: ${model.n_window_size}
       trim_hop_length: ${model.n_window_stride}
-      pitch_fmin: ${model.pitch_fmin}
-      pitch_fmax: ${model.pitch_fmax}
-      pitch_norm: true
-      pitch_mean: ${model.pitch_mean}
-      pitch_std: ${model.pitch_std}
 
     dataloader_params:
       drop_last: false
@@ -118,11 +104,6 @@ model:
       trim_top_db: 50
       trim_frame_length: ${model.n_window_size}
       trim_hop_length: ${model.n_window_stride}
-      pitch_fmin: ${model.pitch_fmin}
-      pitch_fmax: ${model.pitch_fmax}
-      pitch_norm: true
-      pitch_mean: ${model.pitch_mean}
-      pitch_std: ${model.pitch_std}
 
     dataloader_params:
       drop_last: false

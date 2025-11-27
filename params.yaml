@@ -14,10 +14,6 @@ speaker:
       peak_lr: 0.001
       epochs: 50
       pretrained_init_arg: "+init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo"  # Set to "" for training from scratch
-      pitch_fmin: 65.4063949584961
-      pitch_fmax: 2093.004638671875
-      pitch_mean: 207.1428985595703
-      pitch_std: 151.80140686035156
       val_batch_size: 16
       val_max_dur: 13
     hifigan:
@@ -46,10 +42,6 @@ speaker:
       peak_lr: 0.0001
       epochs: 50
       pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_fastpitch_multispeaker_5 +init_from_pretrained_model._.exclude=['fastpitch.encoder.word_emb.weight']"  # Set to "" for training from scratch
-      pitch_mean: 108.50373077392578
-      pitch_std: 23.765565872192383
-      pitch_fmax: 355.3326416015625
-      pitch_fmin: 65.4063949584961
       val_batch_size: 16
       val_max_dur: 13
 

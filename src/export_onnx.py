@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import typer
 from nemo.collections.tts.models import HifiGanModel
 from onnxruntime.quantization import QuantType, quantize_dynamic
@@ -13,6 +15,7 @@ def export_tts_model(
     # make sure target path ends with .onnx
     if not target_path.endswith(".onnx"):
         raise ValueError("Target path must end with .onnx")
+    Path(target_path).parent.mkdir(parents=True, exist_ok=True)
     model.export(target_path)
     quantize_dynamic(
         target_path,
@@ -37,6 +40,7 @@ def export_hifigan_model(
     # make sure target path ends with .onnx
     if not target_path.endswith(".onnx"):
         raise ValueError("Target path must end with .onnx")
+    Path(target_path).parent.mkdir(parents=True, exist_ok=True)
     model.export(target_path)
     quantize_dynamic(
         target_path,
