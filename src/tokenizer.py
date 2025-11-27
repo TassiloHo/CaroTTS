@@ -31,21 +31,24 @@ _PUNCT_LIST = [
     "›",
 ]
 
+
 def normalize_unicode_text(text: str) -> str:
     if not unicodedata.is_normalized("NFC", text):
         text = unicodedata.normalize("NFC", text)
 
     return text
 
+
 def any_locale_text_preprocessing(text: str) -> str:
     res = []
     for c in normalize_unicode_text(text):
-        if c in ['’']:
+        if c in ["’"]:
             res.append("'")
         else:
             res.append(c)
 
-    return ''.join(res)
+    return "".join(res)
+
 
 def tokenize_german(
     text: str, punct: bool = True, apostrophe: bool = True, pad_with_space: bool = True
@@ -84,12 +87,18 @@ def tokenize_german(
     tokens_set = set(tokens)
 
     for c in text:
-        if c == space and len(cs) > 0 and cs[-1] != space or (c.isalnum() or c == "'") and c in tokens_set or (c in _PUNCT_LIST) and punct:  # noqa: E501
+        if (
+            c == space
+            and len(cs) > 0
+            and cs[-1] != space
+            or (c.isalnum() or c == "'")
+            and c in tokens_set
+            or (c in _PUNCT_LIST)
+            and punct
+        ):  # noqa: E501
             cs.append(c)
         elif c != space:
-            logging.warning(
-                f"Text: [{text}] contains unknown char: [{c}]. Symbol will be skipped."
-            )
+            logging.warning(f"Text: [{text}] contains unknown char: [{c}]. Symbol will be skipped.")
 
     if cs:
         while cs and cs[-1] == space:

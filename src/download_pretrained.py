@@ -30,6 +30,7 @@ def download_if_not_exists(filename, pretrained_dir, base_url):
     except Exception as e:
         print(f"✗ Failed to download {filename}: {e}")
 
+
 @app.command()
 def main(
     pretrained_dir: str = typer.Option(

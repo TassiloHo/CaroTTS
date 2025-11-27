@@ -155,15 +155,10 @@ def export_tts_model(pretrained_path: str, target_dir: str, device: str = "cuda"
         },
     )
     Path(target_dir).mkdir(parents=True, exist_ok=True)
-    torch.export.save(
-        exported, str(Path(target_dir) / "fastpitch_encoder_uncompiled.pt2")
-    )
-    target_path = str(Path(target_dir)/"fastpitch_encoder.pt2")
+    torch.export.save(exported, str(Path(target_dir) / "fastpitch_encoder_uncompiled.pt2"))
+    target_path = str(Path(target_dir) / "fastpitch_encoder.pt2")
     print("Compiling encoder with TorchInductor...")
-    output_path = torch._inductor.aoti_compile_and_package(
-        exported,
-        package_path=target_path
-    )
+    output_path = torch._inductor.aoti_compile_and_package(exported, package_path=target_path)
 
     # Create decoder wrapper
     decoder_module = FastPitchDecoder(model.fastpitch).eval()
@@ -177,15 +172,10 @@ def export_tts_model(pretrained_path: str, target_dir: str, device: str = "cuda"
         (*example_decoder_inputs,),
         dynamic_shapes=({1: sequence_dim}, None, None),
     )
-    torch.export.save(
-        exported, str(Path(target_dir) / "fastpitch_decoder_uncompiled.pt2")
-    )
-    target_path = str(Path(target_dir)/"fastpitch_decoder.pt2")
+    torch.export.save(exported, str(Path(target_dir) / "fastpitch_decoder_uncompiled.pt2"))
+    target_path = str(Path(target_dir) / "fastpitch_decoder.pt2")
     print("Compiling decoder with TorchInductor...")
-    output_path = torch._inductor.aoti_compile_and_package(
-        exported,
-        package_path=target_path
-    )
+    output_path = torch._inductor.aoti_compile_and_package(exported, package_path=target_path)
 
     return output_path
 
@@ -205,8 +195,7 @@ def export_hifigan_model(pretrained_path: str, target_dir: str, device: str = "c
     Path(target_dir).mkdir(parents=True, exist_ok=True)
     torch.export.save(exported, str(Path(target_dir) / "hifigan_uncompiled.pt2"))
     output_path = torch._inductor.aoti_compile_and_package(
-        exported,
-        package_path=str(Path(target_dir)/"hifigan.pt2")
+        exported, package_path=str(Path(target_dir) / "hifigan.pt2")
     )
     return output_path
 

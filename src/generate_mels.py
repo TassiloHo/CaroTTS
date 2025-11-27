@@ -18,8 +18,8 @@ app = typer.Typer(help="Generate mel spectrograms and manifests with pretrained 
 
 
 def __load_wav(audio_file):
-    with sf.SoundFile(audio_file, 'r') as f:
-        samples = f.read(dtype='float32')
+    with sf.SoundFile(audio_file, "r") as f:
+        samples = f.read(dtype="float32")
     return samples.transpose()
 
 
@@ -29,7 +29,7 @@ def __generate_mels(entry, spec_model, device, use_beta_binomial_interpolator, m
     audio_len = torch.tensor(audio.shape[1], dtype=torch.long, device=device).unsqueeze(0)
 
     if spec_model.fastpitch.speaker_emb is not None and "speaker" in entry:
-        speaker = torch.tensor([entry['speaker']]).to(device)
+        speaker = torch.tensor([entry["speaker"]]).to(device)
     else:
         speaker = None
 
@@ -37,7 +37,7 @@ def __generate_mels(entry, spec_model, device, use_beta_binomial_interpolator, m
         if "normalized_text" in entry:
             text = spec_model.parse(entry["normalized_text"], normalize=False)
         else:
-            text = spec_model.parse(entry['text'])
+            text = spec_model.parse(entry["text"])
 
         text_len = torch.tensor(text.shape[-1], dtype=torch.long, device=device).unsqueeze(0)
         spect, spect_len = spec_model.preprocessor(input_signal=audio, length=audio_len)
@@ -68,7 +68,7 @@ def __generate_mels(entry, spec_model, device, use_beta_binomial_interpolator, m
         )[0]
 
         save_path = mel_root / f"{Path(entry['audio_filepath']).stem}.npy"
-        np.save(save_path, spectrogram[0].to('cpu').numpy())
+        np.save(save_path, spectrogram[0].to("cpu").numpy())
         entry["mel_filepath"] = str(save_path)
 
     return entry

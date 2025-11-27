@@ -7,10 +7,11 @@ from omegaconf import DictConfig
 
 from models.fastspeech import FastSpeechModel
 
-torch.set_float32_matmul_precision('medium')
+torch.set_float32_matmul_precision("medium")
+
 
 @hydra_runner(config_path="configs", config_name="")
-def main(cfg:DictConfig):
+def main(cfg: DictConfig):
     trainer = pl.Trainer(**cfg.trainer)
     exp_manager(trainer, cfg.get("exp_manager", None))
     model = FastSpeechModel(cfg=cfg.model, trainer=trainer)
@@ -21,5 +22,5 @@ def main(cfg:DictConfig):
     trainer.fit(model)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

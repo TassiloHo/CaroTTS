@@ -74,5 +74,6 @@ def main(
     else:
         raise ValueError("Invalid model type. Choose 'tts' or 'hifigan'.")
 
+
 if __name__ == "__main__":
     typer.run(main)

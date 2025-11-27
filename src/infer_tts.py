@@ -94,10 +94,9 @@ def main(
             manifest=manifest,
             output_dir=str(output_subdir),
             device=device,
-            nrows=nrows
+            nrows=nrows,
         )
 
 
 if __name__ == "__main__":
     typer.run(main)
-
