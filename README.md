@@ -5,7 +5,7 @@
   <img src="carotts_logo.png" alt="CaroTTS Logo" width="250"/>
 </p>
 
-**Fast, Lightweight Text-to-Speech for German** 
+**Fast, Lightweight Text-to-Speech for German**
 
 [![Try it on HuggingFace](https://img.shields.io/badge/🤗-Try%20on%20HuggingFace-yellow)](https://huggingface.co/spaces/Warholt/CaroTTS-DE)
 
@@ -107,7 +107,7 @@ This single command will execute the complete pipeline:
 4. **Generate Mel-Spectrograms**: Creates training data for the vocoder
 5. **Train HiFi-GAN**: Trains the neural vocoder
 6. **Export to ONNX**: Exports trained models to onnx format for deployment
-7. **Export to PT2-Archive**: Uses torch AOTInductor to compile and package for cuda deployments 
+7. **Export to PT2-Archive**: Uses torch AOTInductor to compile and package for cuda deployments
 
 ### Training Specific Stages
 
@@ -166,7 +166,7 @@ ONNX inference is lightweight, fast, and doesn't require PyTorch dependencies:
 import numpy as np
 import onnxruntime as ort
 import soundfile as sf
-from tokenizer import tokenize_german
+from src.tokenizer import tokenize_german
 
 # Load models
 fastpitch_session = ort.InferenceSession("path/to/your/fastpitch.onnx")
@@ -220,7 +220,7 @@ with torch.inference_mode():
     parsed_text = fastpitch.parse(text)
     spec = fastpitch.generate_spectrogram(tokens=parsed_text)
     audio = hifigan.convert_spectrogram_to_audio(spec=spec)
-    
+
     # Save audio
     sf.write("output.wav", audio.squeeze().cpu().numpy(), 44100)
 ```
