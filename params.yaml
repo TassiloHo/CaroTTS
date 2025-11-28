@@ -3,7 +3,7 @@ speaker:
     speaker_name: caromopfen
     data_folder: data
     log_dir: trained_pipelines/caro
-    inference_comparison_nrows: 5
+    inference_comparison_nrows: 10
     export_quantization: "QInt8"
     train_manifest_path: data/caromopfen/train_manifest.jsonl
     val_manifest_path: data/caromopfen/val_manifest.jsonl
@@ -11,8 +11,8 @@ speaker:
       sup_data_path: data/caromopfen/fastpitch_sup_data
       max_dur: 13
       batch_size: 16
-      peak_lr: 0.001
-      epochs: 50
+      peak_lr: 0.0001
+      epochs: 100
       pretrained_init_arg: "+init_from_nemo_model=pretrained_models/FemaleFastpitchHUI_44100.nemo"  # Set to "" for training from scratch
       val_batch_size: 16
       val_max_dur: 13
@@ -20,7 +20,7 @@ speaker:
       pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"  # Set to "++init_from_nemo_model=/path/to/model.nemo" or "" when needed
       batch_size: 8
       peak_lr: 0.0001
-      epochs: 20
+      epochs: 25
       n_train_segments: 51200
       val_batch_size: 8
       val_n_segments: 131072
@@ -31,7 +31,7 @@ speaker:
     speaker_name: Karlsson
     data_folder: data
     log_dir: trained_pipelines/Karlsson
-    inference_comparison_nrows: 20
+    inference_comparison_nrows: 10
     export_quantization: "QInt8"
     train_manifest_path: data/Karlsson/train_manifest.jsonl
     val_manifest_path: data/Karlsson/val_manifest.jsonl
@@ -49,14 +49,12 @@ speaker:
       pretrained_init_arg: "+init_from_pretrained_model._.name=tts_de_hui_hifigan_ft_fastpitch_multispeaker_5"
       batch_size: 8
       peak_lr: 0.0001
-      epochs: 5
+      epochs: 10
       n_train_segments: 51200
       val_batch_size: 8
       val_n_segments: 131072
       val_max_duration: 30
       val_min_duration: 3
-
-
 
 pretrained_models_dir: pretrained_models
 pretrained_downloads:

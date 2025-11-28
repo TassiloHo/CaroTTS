@@ -49,7 +49,7 @@ model:
     mag_power: 1.0
     use_grads: false
     exact_pad: true
-  
+
   generator:
     _target_: nemo.collections.tts.modules.hifigan_modules.Generator
     resblock: 1

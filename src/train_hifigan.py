@@ -14,6 +14,7 @@ def main(cfg: DictConfig):
     exp_manager(trainer, cfg.get("exp_manager", None))
     model = HifiGanModel(cfg=cfg.model, trainer=trainer)
     model.maybe_init_from_pretrained_checkpoint(cfg=cfg)
+    trainer.validate(model)
     trainer.fit(model)
 
 

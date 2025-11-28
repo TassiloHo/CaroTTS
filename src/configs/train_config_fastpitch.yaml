@@ -21,7 +21,7 @@ window: hann
 
 model:
   learn_alignment: true
-  bin_loss_warmup_epochs: 1000
+  bin_loss_warmup_epochs: 100
 
   n_speakers: 1
   max_token_duration: 75
@@ -202,7 +202,7 @@ trainer:
   gradient_clip_val: 1000.0
   enable_checkpointing: false  # Provided by exp_manager
   logger: false  # Provided by exp_manager
-  log_every_n_steps: 5
+  log_every_n_steps: 10
   check_val_every_n_epoch: 1
   benchmark: false
 
@@ -214,7 +214,7 @@ exp_manager:
   create_tensorboard_logger: true
   create_checkpoint_callback: true
   checkpoint_callback_params:
-    save_top_k: 0
+    save_top_k: 1
     save_last: false
     always_save_nemo: true
     monitor: val_loss
