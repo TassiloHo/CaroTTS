@@ -46,7 +46,7 @@ def export_tts_model(
     elif quantization == "fp16":
         # Apply float16 conversion
         print("Applying float16 conversion...")
-        optimized_model = optimizer.optimize_model(target_path, model_type="bert")
+        optimized_model = optimizer.optimize_model(target_path, model_type="conformer")
         optimized_model.convert_float_to_float16(keep_io_types=True)
         optimized_model.save_model_to_file(target_path)
     else:
@@ -87,7 +87,10 @@ def export_hifigan_model(
     elif quantization == "fp16":
         # Apply float16 conversion
         print("Applying float16 conversion...")
-        model_fp16 = float16.convert_float_to_float16(onnx.load(target_path), keep_io_types=True)
+        model_fp16 = float16.convert_float_to_float16(
+            onnx.load(target_path),
+            keep_io_types=True,
+        )
         onnx.save(model_fp16, target_path)
     else:
         print("No quantization applied.")
