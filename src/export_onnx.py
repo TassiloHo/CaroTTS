@@ -95,6 +95,7 @@ def export_hifigan_model(
     else:
         print("No quantization applied.")
 
+
 def main(
     model_type: str = typer.Option(..., help="Type of model to export: 'tts' or 'hifigan'"),
     pretrained_path: str = typer.Option(..., help="Path to the pretrained .nemo model file"),
