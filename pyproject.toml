@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["nemo-toolkit[tts]", "torch==2.8.0", "torchaudio", "ml_dtypes>=0.5.0", "omegaconf", "hydra-core", "ipykernel", "dvc", "remotezip", "onnxruntime", "onnxscript", "ruff"]
+dependencies = ["nemo-toolkit[tts]", "torch==2.8.0", "torchaudio", "ml_dtypes>=0.5.0", "omegaconf", "hydra-core", "ipykernel", "dvc", "remotezip", "onnxruntime", "onnxscript", "ruff", "onnxconverter-common"]
 
 [tool.ruff]
 # Exclude common directories

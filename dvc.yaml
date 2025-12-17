@@ -139,7 +139,7 @@ stages:
         --model-type hifigan
         --pretrained-path ${item.log_dir}/hifigan/latest/checkpoints/hifigan.nemo
         --target-path ${item.log_dir}/onnx/hifigan.onnx
-        --quantization ${item.export_quantization}
+        --quantization QInt8
       deps:
       - ${item.log_dir}/fastpitch/latest/checkpoints/fastpitch.nemo
       - ${item.log_dir}/hifigan/latest/checkpoints/hifigan.nemo

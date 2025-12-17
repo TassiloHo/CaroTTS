@@ -4,7 +4,7 @@ speaker:
     data_folder: data
     log_dir: trained_pipelines/caro
     inference_comparison_nrows: 10
-    export_quantization: "QInt8"
+    export_quantization: fp16
     train_manifest_path: data/caromopfen/train_manifest.jsonl
     val_manifest_path: data/caromopfen/val_manifest.jsonl
     fastpitch:
@@ -32,7 +32,7 @@ speaker:
     data_folder: data
     log_dir: trained_pipelines/Karlsson
     inference_comparison_nrows: 10
-    export_quantization: "QInt8"
+    export_quantization: fp16
     train_manifest_path: data/Karlsson/train_manifest.jsonl
     val_manifest_path: data/Karlsson/val_manifest.jsonl
     fastpitch:

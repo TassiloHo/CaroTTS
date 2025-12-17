@@ -412,6 +412,7 @@ dependencies = [
     { name = "nemo-toolkit", version = "2.0.0", source = { registry = "https://pypi.org/simple" }, extra = ["tts"], marker = "python_full_version >= '3.13'" },
     { name = "nemo-toolkit", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, extra = ["tts"], marker = "python_full_version < '3.13'" },
     { name = "omegaconf" },
+    { name = "onnxconverter-common" },
     { name = "onnxruntime" },
     { name = "onnxscript" },
     { name = "remotezip" },
@@ -428,6 +429,7 @@ requires-dist = [
     { name = "ml-dtypes", specifier = ">=0.5.0" },
     { name = "nemo-toolkit", extras = ["tts"] },
     { name = "omegaconf" },
+    { name = "onnxconverter-common" },
     { name = "onnxruntime" },
     { name = "onnxscript" },
     { name = "remotezip" },
@@ -3716,6 +3718,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/6c/1a/2a94112a39d01a9d1490f5ef3c205d8a17fe1ca27f307b026c40d62d8e9f/onnx_ir-0.1.12.tar.gz", hash = "sha256:742e0bff875d0547724187560b3f441833191c8aa939c05f14176f4892784deb", size = 112699, upload-time = "2025-10-28T23:43:54.129Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c8/36/c4df116f5dcaa82ec7944e5d25624a3811f6603fd190660b0b079ea759fb/onnx_ir-0.1.12-py3-none-any.whl", hash = "sha256:17f86faf8a53b979430bde1bc6022c7a162b0d1534550ddb17a1d37eb993e765", size = 129277, upload-time = "2025-10-28T23:43:52.493Z" },
+]
+
+[[package]]
+name = "onnxconverter-common"
+version = "1.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "numpy", version = "2.3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
+    { name = "onnx" },
+    { name = "packaging" },
+    { name = "protobuf" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4a/67/8dca1868a6e226f8d3f7d666cb6a48b79a60aad5267b16b24627cd8d9eb8/onnxconverter_common-1.16.0-py2.py3-none-any.whl", hash = "sha256:df39ee96f17fff119dff10dd245467651b60b9e8a96020eb93402239794852f7", size = 89511, upload-time = "2025-08-28T19:37:46.988Z" },
 ]
 
 [[package]]
